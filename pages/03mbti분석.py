@@ -72,4 +72,4 @@ try:
         with col1:
             st.metric(label="가장 많은 MBTI 유형 (1등)", value=mbti_df.iloc[0]['MBTI'], delta=f"{mbti_df.iloc[0]['Percentage']:.2f}%")
         with col2:
-            st.metric(label="가장 적은 MBTI 유형 (16
+            st.metric(label="가장 적은 MB
