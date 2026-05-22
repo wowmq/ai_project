@@ -2,28 +2,26 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
-import urllib.request
-import os
 
-# --- 1. 스트림릿 클라우드 한글 깨짐 방지 폰트 설정 ---
+# --- 1. 스트림릿 클라우드 안전한 한글 설정 (외부 다운로드 없음) ---
 @st.cache_data
-def load_korean_font():
-    """스트림릿 클라우드 환경에서 한글 폰트를 다운로드하고 설정하는 함수"""
-    font_url = "https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf"
-    font_path = "NanumGothic-Regular.ttf"
+def set_korean_font():
+    """리눅스/스트림릿 클라우드 환경에서 깨지지 않는 기본 한글/고딕 폰트 설정"""
+    # 시스템에 내장된 폰트 중 고딕/한글 호환 가능한 폰트 후보들
+    available_fonts = [f.name for f in fm.fontManager.ttflist]
     
-    # 폰트 파일이 없으면 다운로드
-    if not os.path.exists(font_path):
-        urllib.request.urlretrieve(font_url, font_path)
-    
-    # Matplotlib에 폰트 등록
-    fm.font_manager.addfont(font_path)
-    font_prop = fm.FontProperties(fname=font_path)
-    plt.rc('font', family=font_prop.get_name())
-    plt.rcParams['axes.unicode_minus'] = False # 마이너스 기호 깨짐 방지
+    # 순서대로 지원하는 폰트 찾기 (Nanum, DejaVu, Liberation 순)
+    font_family = "DejaVu Sans" # 스트림릿 클라우드 기본 내장 폰트 (한글 지원)
+    for f in ["NanumGothic", "NanumBarunGothic", "Liberation Sans", "DejaVu Sans"]:
+        if f in available_fonts:
+            font_family = f
+            break
+            
+    # Matplotlib 환경 설정 적용
+    plt.rc('font', family=font_family)
+    plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
 
-# 폰트 로드 실행
-load_korean_font()
+set_korean_font()
 
 
 # --- 2. 데이터 로드 및 전처리 ---
@@ -75,31 +73,11 @@ for col in age_columns:
     val = str(selected_data[col]).replace(',', '')
     population_values.append(int(val))
 
-# 그래프 그리기
+# 그래프 생성
 fig, ax = plt.subplots(figsize=(10, 6))
 
-# 조건 4: 그래프 바탕색 설정 (연한 보라색 #E8DFF5 또는 #F3E5F5)
-fig.patch.set_facecolor('#F3E5F5') # 전체 피규어 배경색
-ax.set_facecolor('#F3E5F5')        # 그래프 안쪽 배경색
+# 조건 4: 그래프 바탕색 설정 (연한 보라색)
+fig.patch.set_facecolor('#F3E5F5') # 전체 배경색
+ax.set_facecolor('#F3E5F5')        # 그래프 내부 배경색
 
-# 조건 2 & 4: 가로축 연령대, 세로축 인구수 꺾은선 그래프 (빨간색)
-ax.plot(age_columns, population_values, color='red', marker='o', linewidth=2, markersize=6)
-
-# 조건 3: 그래프 제목 및 레이블 설정 (한글 깨짐 없음)
-ax.set_title(f"서울시의 인구통계 ({selected_region})", fontsize=16, fontweight='bold', pad=15)
-ax.set_xlabel("연령대", fontsize=12, labelpad=10)
-ax.set_ylabel("인구수 (명)", fontsize=12, labelpad=10)
-
-# 그래프 그리드 격자 및 디테일 설정
-ax.grid(True, linestyle='--', alpha=0.5, color='#999999')
-plt.xticks(rotation=45)
-plt.tight_layout()
-
-# 스트림릿에 그래프 출력
-st.pyplot(fig)
-
-
-# --- 5. 상세 데이터 테이블 보기 ---
-with st.expander("📊 선택한 지역 원본 데이터 보기"):
-    raw_display = pd.DataFrame([population_values], columns=age_columns, index=[selected_region])
-    st.dataframe(raw_display)
+# 조건 2 & 4: 가로축 연령대,
