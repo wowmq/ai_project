@@ -7,28 +7,37 @@ import matplotlib.font_manager as fm
 @st.cache_data
 def set_korean_font():
     """리눅스/스트림릿 클라우드 환경에서 깨지지 않는 기본 한글/고딕 폰트 설정"""
-    # 시스템에 내장된 폰트 중 고딕/한글 호환 가능한 폰트 후보들
     available_fonts = [f.name for f in fm.fontManager.ttflist]
     
-    # 순서대로 지원하는 폰트 찾기 (Nanum, DejaVu, Liberation 순)
-    font_family = "DejaVu Sans" # 스트림릿 클라우드 기본 내장 폰트 (한글 지원)
+    # 순서대로 지원하는 폰트 찾기 (DejaVu Sans는 스트림릿 클라우드 리눅스 기본 내장이며 한글 지원함)
+    font_family = "DejaVu Sans"
     for f in ["NanumGothic", "NanumBarunGothic", "Liberation Sans", "DejaVu Sans"]:
         if f in available_fonts:
             font_family = f
             break
             
-    # Matplotlib 환경 설정 적용
     plt.rc('font', family=font_family)
     plt.rcParams['axes.unicode_minus'] = False  # 마이너스 기호 깨짐 방지
 
 set_korean_font()
 
 
-# --- 2. 데이터 로드 및 전처리 ---
+# --- 2. 데이터 로드 및 전처리 (UnicodeDecodeError 해결 버전) ---
 @st.cache_data
 def load_data():
-    # 데이터 불러오기 (업로드된 population.csv 파일이 같은 경로에 있어야 합니다)
-    df = pd.read_csv("population.csv")
+    # 파일 인코딩 에러를 방지하기 위해 여러 인코딩 방식을 순서대로 시도합니다.
+    encodings = ['utf-8', 'cp949', 'euc-kr', 'utf-8-sig']
+    df = None
+    
+    for encoding in encodings:
+        try:
+            df = pd.read_csv("population.csv", encoding=encoding)
+            break  # 성공적으로 읽으면 반복문 탈출
+        except UnicodeDecodeError:
+            continue
+            
+    if df is None:
+        raise ValueError("파일을 읽을 수 없습니다. 인코딩 형식을 확인해 주세요.")
     
     # 행정구역 이름 깔끔하게 정리 (예: "서울특별시 강북구 삼양동(11305...)" -> "강북구 삼양동")
     def clean_region_name(name):
@@ -48,6 +57,9 @@ try:
     df = load_data()
 except FileNotFoundError:
     st.error("📂 'population.csv' 파일을 찾을 수 없습니다. GitHub 저장소에 데이터 파일을 함께 업로드해 주세요!")
+    st.stop()
+except ValueError as e:
+    st.error(f"❌ {e}")
     st.stop()
 
 
@@ -80,4 +92,5 @@ fig, ax = plt.subplots(figsize=(10, 6))
 fig.patch.set_facecolor('#F3E5F5') # 전체 배경색
 ax.set_facecolor('#F3E5F5')        # 그래프 내부 배경색
 
-# 조건 2 & 4: 가로축 연령대,
+# 조건 2 & 4: 가로축 연령대, 세로축 인구수 꺾은선 그래프 (빨간색)
+ax.plot(age
