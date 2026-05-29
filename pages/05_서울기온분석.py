@@ -49,7 +49,7 @@ try:
     selected_month = st.sidebar.selectbox("월을 선택하세요", list(range(1, 13)), index=4)  # 기본값 5월
     selected_day = st.sidebar.selectbox("일을 선택하세요", list(range(1, 32)), index=25)   # 기본값 26일
     
-    # 예측을 위한 미래 연도 선택 (데이터셋 마지막 연도 다음 해부터 2100년까지 선택 가능)
+    # 예측을 위한 미래 연도 선택
     predict_year = st.sidebar.slider(
         "예측할 미래 연도를 선택하세요", 
         min_value=max_data_year + 1, 
@@ -57,15 +57,14 @@ try:
         value=max_data_year + 10
     )
 
-    # 4. 데이터 필터링 및 과거 트렌드 정렬
+    # 4. 데이터 필터링 및 과거 트렌드 정렬 (오타 수정 완료!)
     filtered_df = df[(df['월'] == selected_month) & (df['일'] == selected_day)]
-    filtered_df = filtered_df.sort_values(by='연0')
+    filtered_df = filtered_df.sort_values(by='연도')
 
     if filtered_df.empty:
         st.warning(f"선택하신 {selected_month}월 {selected_day}일에 해당하는 과거 데이터가 부족합니다. 다른 날짜를 선택해 주세요.")
     else:
         # 5. 머신러닝(Linear Regression) 기반 미래 기온 예측 코드
-        # X: 연도 데이터, Y: 최고/최저 기온
         X = filtered_df[['연도']].values
         y_max = filtered_df['최고기온(℃)'].values
         y_min = filtered_df['최저기온(℃)'].values
@@ -89,89 +88,4 @@ try:
             st.metric(label="예측 최저기온", value=f"{predicted_min:.1f} ℃", delta="통계적 선형 예측")
 
         # 7. 시각화를 위한 과거 데이터와 예측 데이터 결합
-        # 그래프에 예측 포인트까지 선으로 이어지도록 데이터프레임 복사본 생성
         plot_df = filtered_df[['연도', '최고기온(℃)', '최저기온(℃)']].copy()
-        
-        # 추세선(Trendline) 데이터 계산 (과거 첫 해부터 예측 연도까지 전체 구간)
-        full_years = np.array(list(range(int(plot_df['연도'].min()), predict_year + 1))).reshape(-1, 1)
-        trend_max = model_max.predict(full_years)
-        trend_min = model_min.predict(full_years)
-
-        # 8. Plotly를 이용한 그래프 시각화
-        st.subheader(f"📊 날짜별 기온분석 ({plot_df['연도'].min()}년 ~ {predict_year}년)")
-        fig = object.Figure()
-        
-        # 과거 최고기온 (핫핑크)
-        fig.add_trace(object.Scatter(
-            x=plot_df['연도'], y=plot_df['최고기온(℃)'],
-            mode='lines+markers', name='과거 최고기온',
-            line=dict(color='deeppink', width=2),
-            # 마우스 오버(Hover) 커스텀 설정: 연도와 정확한 기온 표기
-            hovertemplate='<b>%{x}년 최고기온</b><br>온도: %{y:.1f}℃<extra></extra>'
-        ))
-        
-        # 미래 예측 최고기온 단독 점 표시
-        fig.add_trace(object.Scatter(
-            x=[predict_year], y=[predicted_max],
-            mode='markers', name='예측 최고기온',
-            marker=dict(color='crimson', size=10, symbol='diamond'),
-            hovertemplate='<b>🎯 %{x}년 예측 최고</b><br>온도: %{y:.1f}℃<extra></extra>'
-        ))
-
-        # 최고기온 장기 추세선
-        fig.add_trace(object.Scatter(
-            x=full_years.flatten(), y=trend_max,
-            mode='lines', name='최고기온 상승추세',
-            line=dict(color='deeppink', width=1, dash='dash'),
-            hoverinfo='skip'
-        ))
-        
-        # 과거 최저기온 (연한 파란색)
-        fig.add_trace(object.Scatter(
-            x=plot_df['연도'], y=plot_df['최저기온(℃)'],
-            mode='lines+markers', name='과거 최저기온',
-            line=dict(color='lightskyblue', width=2),
-            hovertemplate='<b>%{x}년 최저기온</b><br>온도: %{y:.1f}℃<extra></extra>'
-        ))
-        
-        # 미래 예측 최저기온 단독 점 표시
-        fig.add_trace(object.Scatter(
-            x=[predict_year], y=[predicted_min],
-            mode='markers', name='예측 최저기온',
-            marker=dict(color='darkblue', size=10, symbol='diamond'),
-            hovertemplate='<b>🎯 %{x}년 예측 최저</b><br>온도: %{y:.1f}℃<extra></extra>'
-        ))
-
-        # 최저기온 장기 추세선
-        fig.add_trace(object.Scatter(
-            x=full_years.flatten(), y=trend_min,
-            mode='lines', name='최저기온 상승추세',
-            line=dict(color='lightskyblue', width=1, dash='dash'),
-            hoverinfo='skip'
-        ))
-        
-        # 레이아웃 정의 (가로축: 연도, 세로축: 온도, 제목 및 범례 반영)
-        fig.update_layout(
-            title={
-                'text': "날짜별 기온분석",
-                'y': 0.95, 'x': 0.5,
-                'xanchor': 'center', 'yanchor': 'top',
-                'font': dict(size=20, weight='bold')
-            },
-            xaxis_title="연도",
-            yaxis_title="온도 (℃)",
-            showlegend=True,
-            # 마우스를 수직으로 움직였을 때 동일 연도의 최고/최저 정보가 동시에 깔끔하게 팝업되도록 설정
-            hovermode="x unified",
-            plot_bgcolor="white"
-        )
-        
-        fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
-        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='lightgray')
-
-        st.plotly_chart(fig, use_container_width=True)
-
-except FileNotFoundError:
-    st.error("📂 `seoul.csv` 파일을 찾을 수 없습니다. 대시보드 스크립트와 동일한 루트 폴더에 데이터를 위치시켜 주세요.")
-except ValueError as ve:
-    st.error(f"❌ 데이터 로드 실패: {ve}")
