@@ -118,3 +118,6 @@ if selected_mbti:
             st.markdown("---")
 
 st.caption("제작: MBTI 게임 추천 봇 🤖 | 고유 주소 필터링 완료")
+# 기존 st.video(game['youtube_url']) 대신 이걸 넣어봐!
+st.markdown(f"📺 **[여기 클릭해서 플레이 영상 보기]({game['youtube_url']})**")
+st.write("💡 유튜브 앱이나 웹에서 끊김 없이 바로 재생돼요!")
