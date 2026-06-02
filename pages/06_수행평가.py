@@ -3,92 +3,90 @@ import streamlit as st
 # 1. 페이지 기본 설정 및 디자인
 st.set_page_config(page_title="MBTI별 인생 게임 추천소", page_icon="🎮", layout="centered")
 
-# 친근한 타이틀과 설명
 st.title("🎮 MBTI별 인생 게임 추천소 ✨")
 st.write("내 MBTI에 딱 맞는 게임과 플레이 영상까지 한눈에 확인해봐! 😎")
 
-# 2. MBTI 데이터베이스 (추천 게임 3개씩, 스타일, 멀티/솔로, 유튜브 영상 링크 추가)
-# *실제 서비스할 때는 원하는 게임의 유효한 유튜브 링크로 교체하면 돼!
+# 2. MBTI 데이터베이스 (embed 차단 우회 주소로 변경!)
 mbti_games = {
     "ISTJ": [
-        {"name": "팩토리오 (Factorio)", "style": "철저한 계획과 자동화 공장을 설계하는 뇌섹 게임 ⚙️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=J8SBp4SyvLc"},
-        {"name": "마인크래프트 (기술 모드)", "style": "체계적으로 시스템을 구축하고 자원을 관리하는 정돈된 플레이 🧱", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=fSip6S_w_N0"},
-        {"name": "스타듀 밸리 (Stardew Valley)", "style": "매일 계획된 루틴대로 농장을 경영하고 수확하는 힐링 게임 🧑‍🌾", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=ot7uXNQskis"}
+        {"name": "팩토리오 (Factorio)", "style": "철저한 계획과 자동화 공장을 설계하는 뇌섹 게임 ⚙️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/J8SBp4SyvLc"},
+        {"name": "마인크래프트 (기술 모드)", "style": "체계적으로 시스템을 구축하고 자원을 관리하는 정돈된 플레이 🧱", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/fSip6S_w_N0"},
+        {"name": "스타듀 밸리 (Stardew Valley)", "style": "매일 계획된 루틴대로 농장을 경영하고 수확하는 힐링 게임 🧑‍🌾", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/ot7uXNQskis"}
     ],
     "ISFJ": [
-        {"name": "모여봐요 동물의 숲", "style": "마을 주민들을 챙기고 아기자기하게 섬을 꾸미는 평화로운 감성 🏝️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=_3YNL0OW10s"},
-        {"name": "심즈 4 (The Sims 4)", "style": "캐릭터들의 인생을 돌보고 따뜻한 가정을 만들어가는 시뮬레이션 🏠", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=z00mK3Pxc8w"},
-        {"name": "이잇 텍스 투 (It Takes Two)", "style": "서로 배려하고 협동하며 완벽한 호흡으로 스테이지를 깨는 게임 🤝", "mode": "2인 전용 멀티플레이", "youtube_url": "https://www.youtube.com/watch?v=GAW7z9B96vU"}
+        {"name": "모여봐요 동물의 숲", "style": "마을 주민들을 챙기고 아기자기하게 섬을 꾸미는 평화로운 감성 🏝️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/_3YNL0OW10s"},
+        {"name": "심즈 4 (The Sims 4)", "style": "캐릭터들의 인생을 돌보고 따뜻한 가정을 만들어가는 시뮬레이션 🏠", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/z00mK3Pxc8w"},
+        {"name": "이잇 텍스 투 (It Takes Two)", "style": "서로 배려하고 협동하며 완벽한 호흡으로 스테이지를 깨는 게임 🤝", "mode": "2인 전용 멀티플레이", "youtube_url": "https://www.youtube.com/embed/GAW7z9B96vU"}
     ],
     "INFJ": [
-        {"name": "디트로이트: 비컴 휴먼", "style": "깊이 있는 스토리와 캐릭터들의 감정에 몰입하는 선택형 시네마틱 게임 🤖", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=YtPmIBqRwQU"},
-        {"name": "저니 (Journey)", "style": "말 없이도 통하는 깊은 여운과 예술적인 분위기를 느끼는 힐링 게임 🏜️", "mode": "싱글 플레이 / 온라인 매칭", "youtube_url": "https://www.youtube.com/watch?v=_mF8KkDiIdk"},
-        {"name": "언더테일 (Undertale)", "style": "괴물들의 이야기에 공감하며 자비를 베푸는 감성 충만 스토리 뼈 때리는 게임 💀", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=1Hojv0m3TqA"}
+        {"name": "디트로이트: 비컴 휴먼", "style": "깊이 있는 스토리와 캐릭터들의 감정에 몰입하는 선택형 시네마틱 게임 🤖", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/YtPmIBqRwQU"},
+        {"name": "저니 (Journey)", "style": "말 없이도 통하는 깊은 여운과 예술적인 분위기를 느끼는 힐링 게임 🏜️", "mode": "싱글 플레이 / 온라인 매칭", "youtube_url": "https://www.youtube.com/embed/_mF8KkDiIdk"},
+        {"name": "언더테일 (Undertale)", "style": "괴물들의 이야기에 공감하며 자비를 베푸는 감성 충만 스토리 뼈 때리는 게임 💀", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/1Hojv0m3TqA"}
     ],
     "INTJ": [
-        {"name": "시티즈: 스카이라인", "style": "도시 전체의 교통, 재정, 구역을 완벽하게 통제하고 설계하는 시뮬레이션 🏙️", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=0gI2NrcD9wM"},
-        {"name": "문명 6 (Civilization VI)", "style": "몇 수 앞을 내다보며 자신만의 전략으로 세계를 정복하는 턴제 게임 🌍", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=5KdE0p2joJw"},
-        {"name": "포탈 2 (Portal 2)", "style": "공간을 비틀어 정교한 퍼즐을 풀어내는 고지능 플레이 🌀", "mode": "싱글 플레이 / 2인 협동 모드 가능", "youtube_url": "https://www.youtube.com/watch?v=A88YiZdXugA"}
+        {"name": "시티즈: 스카이라인", "style": "도시 전체의 교통, 재정, 구역을 완벽하게 통제하고 설계하는 시뮬레이션 🏙️", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/0gI2NrcD9wM"},
+        {"name": "문명 6 (Civilization VI)", "style": "몇 수 앞을 내다보며 자신만의 전략으로 세계를 정복하는 턴제 게임 🌍", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/5KdE0p2joJw"},
+        {"name": "포탈 2 (Portal 2)", "style": "공간을 비틀어 정교한 퍼즐을 풀어내는 고지능 플레이 🌀", "mode": "싱글 플레이 / 2인 협동 모드 가능", "youtube_url": "https://www.youtube.com/embed/A88YiZdXugA"}
     ],
     "ISTP": [
-        {"name": "몬스터 헌터: 월드", "style": "정교한 조작과 무기 메커니즘을 마스터해 거대 몬스터를 사냥하는 손맛 🦖", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=3S_6X4nE_b4"},
-        {"name": "젤다의 전설 브레스 오브 더 와일드", "style": "세상의 물리 법칙을 이용해 내 맘대로 오픈월드를 탐험하고 생존하는 재미 🏹", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=zw47_q9wbBE"},
-        {"name": "에이펙스 레전드", "style": "빠른 판단력과 피지컬로 전장을 누비는 하이템포 배틀로얄 FPS 🔫", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=oQtHENM_G94"}
+        {"name": "몬스터 헌터: 월드", "style": "정교한 조작과 무기 메커니즘을 마스터해 거대 몬스터를 사냥하는 손맛 🦖", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/3S_6X4nE_b4"},
+        {"name": "젤다의 전설 브레스 오브 더 와일드", "style": "세상의 물리 법칙을 이용해 내 맘대로 오픈월드를 탐험하고 생존하는 재미 🏹", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/zw47_q9wbBE"},
+        {"name": "에이펙스 레전드", "style": "빠른 판단력과 피지컬로 전장을 누비는 하이템포 배틀로얄 FPS 🔫", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/oQtHENM_G94"}
     ],
     "ISFP": [
-        {"name": "마인크래프트 (건축/셰이더)", "style": "아름다운 풍경 속에서 나만의 예술적인 건축물을 자유롭게 짓는 힐링 플레이 🌌", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=fSip6S_w_N0"},
-        {"name": "그리스 (Gris)", "style": "한 편의 수채화 같은 그래픽과 감성적인 음악 속을 유영하는 예술 게임 🎨", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=BRiEkaXAVP4"},
-        {"name": "로블록스 (입양하세요 등)", "style": "정해진 틀 없이 자유롭게 돌아다니며 가볍고 트렌디하게 즐기는 소통 플레이 🎒", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=eAvXhNlO-r8"}
+        {"name": "마인크래프트 (건축/셰이더)", "style": "아름다운 풍경 속에서 나만의 예술적인 건축물을 자유롭게 짓는 힐링 플레이 🌌", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/fSip6S_w_N0"},
+        {"name": "그리스 (Gris)", "style": "한 편의 수채화 같은 그래픽과 감성적인 음악 속을 유영하는 예술 게임 🎨", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/BRiEkaXAVP4"},
+        {"name": "로블록스 (입양하세요 등)", "style": "정해진 틀 없이 자유롭게 돌아다니며 가볍고 트렌디하게 즐기는 소통 플레이 🎒", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/eAvXhNlO-r8"}
     ],
     "INFP": [
-        {"name": "오리와 도깨비불", "style": "환상적이고 몽환적인 그래픽 속에서 감동적인 스토리를 따라가는 여정 🦊", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=2reK8k40wa8"},
-        {"name": "스카이: 빛의 아이들", "style": "하늘을 날아다니며 따뜻한 감성을 나누고 친구를 사귀는 평화로운 오픈월드 ☁️", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=M8ZorVreA6U"},
-        {"name": "라이프 이즈 스트레인지", "style": "시간을 돌리는 능력으로 주인공의 고뇌와 성장을 함께하는 감성 드라마 🦋", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=AURVxv_7W9Q"}
+        {"name": "오리와 도깨비불", "style": "환상적이고 몽환적인 그래픽 속에서 감동적인 스토리를 따라가는 여정 🦊", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/2reK8k40wa8"},
+        {"name": "스카이: 빛의 아이들", "style": "하늘을 날아다니며 따뜻한 감성을 나누고 친구를 사귀는 평화로운 오픈월드 ☁️", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/M8ZorVreA6U"},
+        {"name": "라이프 이즈 스트레인지", "style": "시간을 돌리는 능력으로 주인공의 고뇌와 성장을 함께하는 감성 드라마 🦋", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/AURVxv_7W9Q"}
     ],
     "INTP": [
-        {"name": "아우터 와일즈 (Outer Wilds)", "style": "우주의 비밀และ 루프물의 미스터리를 순수 호기심과 추리로 풀어내는 갓겜 🚀", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=d6LGnvFAibU"},
-        {"name": "바바 이즈 유 (Baba Is You)", "style": "게임의 규칙 자체를 코딩하듯 뜯어고쳐 깨는 신개념 하드코어 퍼즐 🧠", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=jZ8Z_I_919s"},
-        {"name": "소울라이크 시리즈 (엘든 링 등)", "style": "보스의 패턴을 분석하고 완벽한 공략법을 찾아내어 파훼하는 성취감 ⚔️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=AKXiKBnzpKw"}
+        {"name": "아우터 와일즈 (Outer Wilds)", "style": "우주의 비밀과 루프물의 미스터리를 순수 호기심과 추리로 풀어내는 갓겜 🚀", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/d6LGnvFAibU"},
+        {"name": "바바 이즈 유 (Baba Is You)", "style": "게임의 규칙 자체를 코딩하듯 뜯어고쳐 깨는 신개념 하드코어 퍼즐 🧠", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/jZ8Z_I_919s"},
+        {"name": "소울라이크 시리즈 (엘든 링 등)", "style": "보스의 패턴을 분석하고 완벽한 공략법을 찾아내어 파훼하는 성취감 ⚔️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/AKXiKBnzpKw"}
     ],
     "ESTP": [
-        {"name": "발로란트 (VALORANT)", "style": "순간적인 피지컬과 화려한 스킬 연계로 상대를 찍어누르는 하이퍼 FPS 🎯", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=e_E9W2vsRbQ"},
-        {"name": "GTA 5", "style": "넓은 도시에서 법 따윈 불도저처럼 밀어버리는 짜릿하고 거침없는 오픈월드 액션 🚘", "mode": "싱글 플레이 / 온라인 멀티플레이", "youtube_url": "https://www.youtube.com/watch?v=QkkoHAzjnUs"},
-        {"name": "리그 오브 레전드 (LoL)", "style": "치열한 교전과 빠른 템포의 한타로 도파민을 폭발시키는 국민 게임 👑", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=mDYqT0_9VR4"}
+        {"name": "발로란트 (VALORANT)", "style": "순간적인 피지컬과 화려한 스킬 연계로 상대를 찍어누르는 하이퍼 FPS 🎯", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/e_E9W2vsRbQ"},
+        {"name": "GTA 5", "style": "넓은 도시에서 법 따윈 불도저처럼 밀어버리는 짜릿하고 거침없는 오픈월드 액션 🚘", "mode": "싱글 플레이 / 온라인 멀티플레이", "youtube_url": "https://www.youtube.com/embed/QkkoHAzjnUs"},
+        {"name": "리그 오브 레전드 (LoL)", "style": "치열한 교전과 빠른 템포의 한타로 도파민을 폭발시키는 국민 게임 👑", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/mDYqT0_9VR4"}
     ],
     "ESFP": [
-        {"name": "폴 가이즈 (Fall Guys)", "style": "귀여운 캐릭터들과 함께 난장판 레이스를 즐기는 웃음 벨 예능 게임 🦄", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=2O7KOnThcoY"},
-        {"name": "저스트 댄스 (Just Dance)", "style": "신나는 음악에 맞춰 몸을 흔들며 에너지를 뿜어내는 흥 폭발 게임 🕺", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=H7mXMMm87fM"},
-        {"name": "어몽 어스 (Among Us)", "style": "친구들과 왁자지껄 떠들며 속고 속이는 실시간 정치 대소동 🕵️‍♂️", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=ns8Sox4g5g8"}
+        {"name": "폴 가이즈 (Fall Guys)", "style": "귀여운 캐릭터들과 함께 난장판 레이스를 즐기는 웃음 벨 예능 게임 🦄", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/2O7KOnThcoY"},
+        {"name": "저스트 댄스 (Just Dance)", "style": "신나는 음악에 맞춰 몸을 흔들며 에너지를 뿜어내는 흥 폭발 게임 🕺", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/H7mXMMm87fM"},
+        {"name": "어몽 어스 (Among Us)", "style": "친구들과 왁자지껄 떠들며 속고 속이는 실시간 정치 대소동 🕵️‍♂️", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/ns8Sox4g5g8"}
     ],
     "ENFP": [
-        {"name": "서브노티카 (Subnautica)", "style": "외계 해양 행성을 탐험하며 신기한 생물들을 발견하고 기지를 짓는 모험 🐳", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=Rz2RIdOGOuM"},
-        {"name": "팀 파이트 택틱스 (TFT/롤토체스)", "style": "매 판 무궁무진한 시너지 조합을 짜며 나만의 사기 덱을 완성하는 재미 🃏", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=T_8V_8B9v_I"},
-        {"name": "인간: 폴 플랫 (Human: Fall Flat)", "style": "흐느적거리는 몸으로 기상천외하고 엉뚱한 플레이를 만들어내는 몸개그 게임 🏃‍♂️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=tIit636V_wY"}
+        {"name": "서브노티카 (Subnautica)", "style": "외계 해양 행성을 탐험하며 신기한 생물들을 발견하고 기지를 짓는 모험 🐳", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/Rz2RIdOGOuM"},
+        {"name": "팀 파이트 택틱스 (TFT/롤토체스)", "style": "매 판 무궁무진한 시너지 조합을 짜며 나만의 사기 덱을 완성하는 재미 🃏", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/T_8V_8B9v_I"},
+        {"name": "인간: 폴 플랫 (Human: Fall Flat)", "style": "흐느적거리는 몸으로 기상천외하고 엉뚱한 플레이를 만들어내는 몸개그 게임 🏃‍♂️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/tIit636V_wY"}
     ],
     "ENTP": [
-        {"name": "오버워치 2", "style": "고정관념을 깨는 기상천외한 영웅 조합과 화려한 한타 난전을 이끄는 재미 💥", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=GKXS_YA9s7E"},
-        {"name": "하스스톤 (Hearthstone)", "style": "상대의 심리를 읽고 골탕 먹이는 참신한 예능 덱과 두뇌 싸움 🃏", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=QdHcMT-P0_4"},
-        {"name": "게리스 모드 (Garry's Mod)", "style": "정해진 규칙 없이 내 멋대로 모드를 만들고 트롤링하며 노는 대혼돈 멀티 🛠️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=b43I_pZ0_Sg"}
+        {"name": "오버워치 2", "style": "고정관념을 깨는 기상천외한 영웅 조합과 화려한 한타 난전을 이끄는 재미 💥", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/GKXS_YA9s7E"},
+        {"name": "하스스톤 (Hearthstone)", "style": "상대의 심리를 읽고 골탕 먹이는 참신한 예능 덱과 두뇌 싸움 🃏", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/QdHcMT-P0_4"},
+        {"name": "게리스 모드 (Garry's Mod)", "style": "정해진 규칙 없이 내 멋대로 모드를 만들고 트롤링하며 노는 대혼돈 멀티 🛠️", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/b43I_pZ0_Sg"}
     ],
     "ESTJ": [
-        {"name": "풋볼 매니저 (FM)", "style": "구단의 예산, 전술, 선수 영입까지 완벽하게 통제하는 악마의 경영 시뮬레이션 ⚽", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=Y7366-T0Imo"},
-        {"name": "레인보우 식스 시즈", "style": "철저한 오더와 완벽한 전술, 팀원 간의 브리핑으로 승리하는 하드코어 FPS 🪖", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=6wKcl_N6g_M"},
-        {"name": "림월드 (RimWorld)", "style": "생존자들에게 효율적인 업무를 배정하고 기지를 철두철미하게 방어하는 식민지 경영 🪵", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=3tDrxOAFUog"}
+        {"name": "풋볼 매니저 (FM)", "style": "구단의 예산, 전술, 선수 영입까지 완벽하게 통제하는 악마의 경영 시뮬레이션 ⚽", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/Y7366-T0Imo"},
+        {"name": "레인보우 식스 시즈", "style": "철저한 오더와 완벽한 전술, 팀원 간의 브리핑으로 승리하는 하드코어 FPS 🪖", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/6wKcl_N6g_M"},
+        {"name": "림월드 (RimWorld)", "style": "생존자들에게 효율적인 업무를 배정하고 기지를 철두철미하게 방어하는 식민지 경영 🪵", "mode": "싱글 플레이 전용", "youtube_url": "https://www.youtube.com/embed/3tDrxOAFUog"}
     ],
     "ESFJ": [
-        {"name": "오버쿡! 올유캔잇 (Overcooked!)", "style": "지옥의 주방에서 역할 분담을 확실히 하며 최고의 팀워크를 발휘하는 게임 👨‍🍳", "mode": "멀티플레이 필수 (협동)", "youtube_url": "https://www.youtube.com/watch?v=0kI79Z4F_I4"},
-        {"name": "로스트아크 (LOST ARK)", "style": "길드원들과 다 같이 레이드 공략을 소통하며 함께 성장하는 대규모 MMORPG ⚔️", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=Yk8_oDkYhHA"},
-        {"name": "리탈 컴퍼니 (Lethal Company)", "style": "팀원들과 음성 채팅으로 꽉꽉 소통하며 폐품을 수거하는 꿀잼 공포 시트콤 🎙️", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=S6Yw6U-pI_U"}
+        {"name": "오버쿡! 올유캔잇 (Overcooked!)", "style": "지옥의 주방에서 역할 분담을 확실히 하며 최고의 팀워크를 발휘하는 게임 👨‍🍳", "mode": "멀티플레이 필수 (협동)", "youtube_url": "https://www.youtube.com/embed/0kI79Z4F_I4"},
+        {"name": "로스트아크 (LOST ARK)", "style": "길드원들과 다 같이 레이드 공략을 소통하며 함께 성장하는 대규모 MMORPG ⚔️", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/Yk8_oDkYhHA"},
+        {"name": "리탈 컴퍼니 (Lethal Company)", "style": "팀원들과 음성 채팅으로 꽉꽉 소통하며 폐품을 수거하는 꿀잼 공포 시트콤 🎙️", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/S6Yw6U-pI_U"}
     ],
     "ENFJ": [
-        {"name": "데드 바이 데이라이트", "style": "생존자 무리를 이끌고 협동하여 살인마의 눈을 피해 탈출하는 스릴 만점 팀플레이 🏃", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=JGhIXLO3Slo"},
-        {"name": "헬다이버즈 2 (Helldivers 2)", "style": "은하계의 민주주의를 위해 동료들과 의기투합하여 전장을 누비는 화끈한 협동 슈팅 🔥", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=Xb_S6v7X9p8"},
-        {"name": "스타듀 밸리 (멀티)", "style": "마을 주민들과 친해지고 친구들과 다 함께 협동 농장을 키워가는 따뜻한 공동체 생활 🌽", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=ot7uXNQskis"}
+        {"name": "데드 바이 데이라이트", "style": "생존자 무리를 이끌고 협동하여 살인마의 눈을 피해 탈출하는 스릴 만점 팀플레이 🏃", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/JGhIXLO3Slo"},
+        {"name": "헬다이버즈 2 (Helldivers 2)", "style": "은하계의 민주주의를 위해 동료들과 의기투합하여 전장을 누비는 화끈한 협동 슈팅 🔥", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/Xb_S6v7X9p8"},
+        {"name": "스타듀 밸리 (멀티)", "style": "마을 주민들과 친해지고 친구들과 다 함께 협동 농장을 키워가는 따뜻한 공동체 생활 🌽", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/ot7uXNQskis"}
     ],
     "ENTJ": [
-        {"name": "크루세이더 킹즈 3", "style": "국가의 정치, 외교, 군사를 총괄하며 세계 패권을 장악하는 최고 권력자 시뮬레이션 👑", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=uKofV5wWvIQ"},
-        {"name": "스타크래프트 시리즈", "style": "엄청난 멀티태스킹과 카리스마 있는 부대 컨트롤로 상대를 압도하는 실시간 전략 🛸", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/watch?v=mDYqT0_9VR4"},
-        {"name": "러스트 (Rust)", "style": "강한 자만 살아남는 무법지대에서 클랜을 결성하고 리더십을 발휘해 영토를 지배하는 생존 게임 ⛺", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/watch?v=LGc_bZ-NcoY"}
+        {"name": "크루세이더 킹즈 3", "style": "국가의 정치, 외교, 군사를 총괄하며 세계 패권을 장악하는 최고 권력자 시뮬레이션 👑", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/uKofV5wWvIQ"},
+        {"name": "스타크래프트 시리즈", "style": "엄청난 멀티태스킹과 카리스마 있는 부대 컨트롤로 상대를 압도하는 실시간 전략 🛸", "mode": "싱글 플레이 / 멀티플레이 가능", "youtube_url": "https://www.youtube.com/embed/mDYqT0_9VR4"},
+        {"name": "러스트 (Rust)", "style": "강한 자만 살아남는 무법지대에서 클랜을 결성하고 리더십을 발휘해 영토를 지배하는 생존 게임 ⛺", "mode": "온라인 멀티플레이 전용", "youtube_url": "https://www.youtube.com/embed/LGc_bZ-NcoY"}
     ]
 }
 
@@ -96,10 +94,10 @@ mbti_games = {
 st.markdown("---")
 selected_mbti = st.selectbox("👉 너의 MBTI를 골라봐!", list(mbti_games.keys()))
 
-# 4. 결과 및 영상 출력 구역
+# 4. 결과 및 영상 출력
 if selected_mbti:
     st.markdown(f"### ⚡ **{selected_mbti}** 유형에게 추천하는 인생 게임 리스트!")
-    st.write("너의 성향에 딱 맞는 게임과 공식 트레일러/플레이 영상이야! 📺")
+    st.write("너의 성향에 딱 맞는 게임과 공식 플레이 영상이야! 턴 온! 📺")
     
     games = mbti_games[selected_mbti]
     
@@ -109,8 +107,13 @@ if selected_mbti:
             st.write(f"**🎮 플레이 스타일:** {game['style']}")
             st.write(f"**👥 게임 모드:** `{game['mode']}`")
             
-            # 💡 핵심 포인트: 유튜브 영상을 앱 안에 바로 임베드!
+            # 플레이어 배치
             st.video(game['youtube_url'])
+            
+            # 💡 혹시나 기기/환경 문제로 안 틀어질 때를 위한 직접가기 링크 버튼!
+            # embed 주소를 다시 일반 주소 형식으로 변환해서 링크 제공
+            normal_url = game['youtube_url'].replace("/embed/", "/watch?v=")
+            st.markdown(f"🔗 [영상 안 나오면 클릭! 유튜브에서 직접 보기]({normal_url})")
             st.markdown("---")
 
-st.caption("제작: MBTI 게임 추천 봇 🤖 | 스트림릿 기본 비디오 컴포넌트 사용 중")
+st.caption("제작: MBTI 게임 추천 봇 🤖")
