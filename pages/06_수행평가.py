@@ -1,5 +1,9 @@
 import streamlit as st
 import csv
+import io
+
+# [안전장치] 캐시 및 최신 파이썬 환경의 오작동 방지
+st.cache_data.clear()
 
 # 페이지 설정
 st.set_page_config(page_title="MBTI 게임 추천소 v2", page_icon="🎮", layout="wide")
@@ -7,32 +11,28 @@ st.set_page_config(page_title="MBTI 게임 추천소 v2", page_icon="🎮", layo
 st.title("✨ MBTI별 찰떡 게임 추천소 ✨")
 st.write("내 MBTI를 선택하면, 너의 성향에 딱 맞는 레전드 게임 3개를 장르별로 추천해줄게! 🚀")
 
-# CSV 파일에서 안전하게 데이터 읽어오기
-mbti_games = {}
-with open('games.csv', mode='r', encoding='utf-8') as f:
-    reader = csv.DictReader(f)
-    for row in reader:
-        mbti = row['mbti']
-        if mbti not in mbti_games:
-            mbti_games[mbti] = []
-        mbti_games[mbti].append(row)
-
-mbti_list = sorted(list(mbti_games.keys()))
-user_mbti = st.selectbox("너의 MBTI는 뭐야? 선택해봐! 👇", mbti_list)
-
-if user_mbti:
-    games = mbti_games[user_mbti]
-    st.divider()
-    st.subheader(f"✨ [{user_mbti}] 유형을 위한 추천 게임 Top 3! ✨")
-    st.write("너의 성향에 맞춰서 재미 보장하는 게임들로 3개 꽉꽉 채워왔어 ✌️")
-    st.write("")
-
-    cols = st.columns(3)
-    for i, game in enumerate(games):
-        with cols[i]:
-            with st.container(border=True):
-                st.markdown(f"### {game['emoji']} {game['name']}")
-                st.write(f"**🧐 스타일:** {game['style']}")
-                st.write(f"**👥 플레이 방식:** {game['mode']}")
-                
-    st.success("이 중에 너의 취향을 저격한 게임이 분명히 있을 거야! 친구들이랑 공유해서 같이 골라봐! 🎮🔥")
+# 파일 경로 문제를 100% 방지하기 위해 데이터를 코드 내부에 인메모리 문자열로 보관해!
+csv_data = '''mbti,name,style,mode,emoji
+ISTJ,스타듀밸리,꼼꼼한 계획과 루틴이 핵심! 체계적으로 성장하는 재미 🌱,솔로 (멀티 가능),👨‍🌾
+ISTJ,팩토리오,자원을 효율적으로 배치하고 자동화 공장을 짓는 철저한 시스템 게임 ⚙️,솔로 (멀티 가능),🏭
+ISTJ,풋볼매니저 (FM),방대한 데이터를 분석하고 구단을 관리하는 본격 과몰입 경영 ⚽,솔로 전용,📋
+ISFJ,모여봐요 동물의 숲,주변을 이쁘게 가꾸고 주민들을 챙기는 따뜻한 힐링 🍎,솔로 (멀티 가능),🍃
+ISFJ,언패킹 (Unpacking),이삿짐을 정해진 자리에 차분히 정리하며 마음의 평화를 얻는 게임 📦,솔로 전용,🏠
+ISFJ,가든 인,나만의 아늑한 방에서 아기자기한 식물들을 정성껏 키우는 힐링 스타일 🪴,솔로 전용,🌸
+INFJ,언더테일,심오한 스토리와 캐릭터들의 감정선! 내 선택이 결말을 바꾸는 감성 게임 💀,솔로 전용,💀
+INFJ,오리와 도깨비불,한편의 아름다운 동화 속 주인공이 되어 감동적인 서사를 탐험하기 🧚,솔로 전용,🦉
+INFJ,디스코 엘리시움,인간의 내면과 깊은 철학적 메시지를 추리하는 웰메이드 스토리텔링 🕵️,솔로 전용,🥃
+INTJ,시티즈: 스카이라인,완벽한 도시 교통망과 구역 조닝으로 도시를 완벽 통제하는 시뮬레이션 🏙️,솔로 전용,📐
+INTJ,슬레이 더 스파이어,철저한 계산과 확률을 바탕으로 나만의 최강 덱을 짜는 전략 카드 게임 🃏,솔로 전용,🔮
+INTJ,체스,상대의 몇 수 앞을 내다보며 오직 수싸움으로만 승부하는 두뇌 싸움 ♟️,솔로 & 멀티 모두 지원,👑
+ISTP,마인크래프트,도구를 만들고 세상을 내 마음대로 개조하는 진정한 장인의 자유도! 🛠️,솔로 & 멀티 모두 지원,⛏️
+ISTP,몬스터 헌터: 월드,무기 고유의 메커니즘을 마스터하고 거대 괴수를 사냥하는 짜릿한 손맛 ⚔️,솔로 (멀티 가능),⚔️
+ISTP,젤다의 전설 브레스 오브 더 와일드,물리 엔진을 활용해 내 방식대로 맵을 공략하는 오픈월드 고트 게임 🏹,솔로 전용,🛡️
+ISFP,저니 (Journey),아름다운 사막 풍경과 음악을 즐기며 정처 없이 떠나는 예술적 경험 🌅,솔로 (랜덤 만남 가능),🧣
+ISFP,그리스 (GRIS),한 편의 수채화 같은 그래픽 속에서 감정을 치유해 나가는 플랫폼 게임 🎨,솔로 전용,🖌️
+ISFP,데이브 더 다이버,낮에는 평화롭게 바다를 탐험하고 밤에는 초밥집을 운영하는 아늑한 라이프 🍣,솔로 전용,🤿
+INFP,스카이: 빛의 아이들,몽환적인 하늘을 날아다니며 세상에 따뜻함을 전파하는 감성 끝판왕 ☁️,솔로 & 멀티 모두 지원,✨
+INFP,옴오리 (OMORI),꿈과 현실을 오가며 내면의 깊은 상처와 기억을 마주하는 감성 RPG 💭,솔로 전용,🎻
+INFP,투 더 문,기억을 바꿔 소원을 들어주는 감동적이고 아름다운 스토리 중심의 게임 🌙,솔로 전용,🎹
+INTP,포탈 시리즈,공간 왜곡 총을 사용해 물리학적 난관을 헤쳐나가는 천재 퍼즐 🌀,솔로 (2편은 멀티 가능),🧪
+INTP,바바 이즈 유,게임의 규칙 자체를 코딩하듯 뜯어고쳐 깨
