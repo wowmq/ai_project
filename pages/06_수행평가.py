@@ -1,42 +1,20 @@
 import streamlit as st
+import json
 
-# 페이지 설정 (가장 기본적이고 안전한 설정)
-st.set_page_config(page_title="MBTI 게임 추천소", page_icon="🎮")
+# 페이지 기본 설정
+st.set_page_config(page_title="MBTI Game Recommender", page_icon="🎮")
 
-# 제목 부분
 st.title("✨ MBTI별 찰떡 게임 추천소 ✨")
 st.write("내 MBTI를 선택하면, 너한테 딱 어울리는 레전드 게임 3개를 추천해줄게! 🔥")
 
-# 오류를 일으키는 원인들을 싹 제거한 안전한 데이터베이스
-mbti_games = {
+# 컴파일 에러를 원천 차단하기 위해 데이터를 JSON 문자열로 격리 처리!
+raw_json = """
+{
     "ISTJ": [
-        {"name": "스타듀밸리", "style": "꼼꼼한 계획과 루틴이 핵심! 농장을 경영하며 체계적으로 성장하는 재미 🌱", "mode": "솔로 (멀티 가능)", "emoji": "👨‍🌾"},
-        {"name": "팩토리오", "style": "최적의 효율을 찾아 공장을 자동화하는 두뇌 풀가동 시뮬레이션 ⚙️", "mode": "솔로 (멀티 가능)", "emoji": "🏭"},
-        {"name": "풋볼매니저", "style": "방대한 데이터를 분석하고 구단을 관리하는 본격 과몰입 경영 게임 ⚽", "mode": "솔로 전용", "emoji": "📋"}
+        {"name": "\\uc2a4\\ud0c0\\ub4c0\\ubc38\\ub9ac", "style": "\\uaf3c\\uaf3c\\ud55c \\uacc4\\ud68d\\uacfc \\ub8e8\\ud2f4\\uc774 \\ud575\\uc2ec! \\ub18d\\uc7a5\\uc744 \\uacbd\\uc601\\ud558\\uba70 \\uccb4\\uacc4\\uc801\\uc73c\\ub85c \\uc131\\uc7a5\\ud558\\ub294 \\uc7ac\\ubbf8", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83d\\udc68\\u200d\\ud83c\\udf3e"},
+        {"name": "\\ud329\\ud1a0\\ub9ac\\uc624", "style": "\\ucui1c\\uc801\\uc758 \\ud6a8\\uc728\\uc744 \\uc263\\uc544 \\uacf5\\uc7a5\\uc744 \\uc790\\ub3d9\\ud654\\ud558\\ub294 \\ub450\\ub1cc \\ud480\\uac00\\ub3d9 \\uc2dc\\ubbac\\ub808\\uc774\\uc158", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83c\\udfed"},
+        {"name": "\\ud48b\\ubcbc\\ub9e4\\ub2c8\\uc800", "style": "\\ubc29\\ub300\\ud55c \\ub370\\uc774\\ud130\\ub9bc \\ubd84\\uc11d\\ud558\\uace0 \\uad6c\\ub2e8\\uc744 \\uad00\\ub9ac\\ud558\\ub294 \\ubcc8\\uaca9 \\uacfc\\ubab0\\uc785 \\uacbd\\uc601 \\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udccb"}
     ],
     "ISFJ": [
-        {"name": "모여봐요 동물의 숲", "style": "주변을 가꾸고 주민들을 챙기는 따뜻한 힐링 스타일 🍎", "mode": "솔로 (멀티 가능)", "emoji": "🍃"},
-        {"name": "언패킹", "style": "이삿짐을 정해진 자리에 차분히 정리하며 마음의 평화를 얻는 방 꾸미기 게임 📦", "mode": "솔로 전용", "emoji": "🏠"},
-        {"name": "가든 인", "style": "나만의 아늑한 방에서 아기자기한 식물들을 정성껏 키우는 식물 힐링 게임 🪴", "mode": "솔로 전용", "emoji": "🌸"}
-    ],
-    "INFJ": [
-        {"name": "언더테일", "style": "심오한 스토리와 철학적인 선택! 내 선택에 따라 결말이 바뀌는 감성 게임 💀", "mode": "솔로 전용", "emoji": "💀"},
-        {"name": "오리와 도깨비불", "style": "한편의 아름다운 동화 속 주인공이 되어 감동적인 서사를 탐험하는 명작 🧚", "mode": "솔로 전용", "emoji": "🦉"},
-        {"name": "디스코 엘리시움", "style": "인간의 내면과 깊은 철학적 메시지를 추리하는 웰메이드 스토리텔링 게임 🕵️", "mode": "솔로 전용", "emoji": "🥃"}
-    ],
-    "INTJ": [
-        {"name": "시티즈 스카이라인", "style": "완벽한 도시 교통망과 구역을 설계하여 도시를 완벽 통제하는 시뮬레이션 🏙️", "mode": "솔로 전용", "emoji": "📐"},
-        {"name": "슬레이 더 스파이어", "style": "철저한 계산과 확률을 바탕으로 나만의 최강 덱을 짜는 전략 카드 게임 🃏", "mode": "솔로 전용", "emoji": "🔮"},
-        {"name": "체스", "style": "상대의 몇 수 앞을 내다보며 오직 수싸움으로만 승부하는 전통 두뇌 싸움 ♟️", "mode": "솔로 & 멀티 모두 지원", "emoji": "👑"}
-    ],
-    "ISTP": [
-        {"name": "마인크래프트", "style": "도구를 만들고 세상을 내 마음대로 개조하는 진정한 자유도 장인 게임 🛠️", "mode": "솔로 & 멀티 모두 지원", "emoji": "⛏️"},
-        {"name": "몬스터 헌터 월드", "style": "무기 고유의 메커니즘을 마스터하고 거대 괴수를 사냥하는 짜릿한 손맛 ⚔️", "mode": "솔로 (멀티 가능)", "emoji": "⚔️"},
-        {"name": "젤다의 전설 브레스 오브 더 와일드", "style": "물리 엔진을 활용해 내 방식대로 맵을 공략하는 오픈월드 고트 게임 🏹", "mode": "솔로 전용", "emoji": "🛡️"}
-    ],
-    "ISFP": [
-        {"name": "저니", "style": "아름다운 영상미와 음악을 즐기며 정처 없이 떠나는 예술적 힐링 어드벤처 🌅", "mode": "솔로 (랜덤 만남 가능)", "emoji": "🧣"},
-        {"name": "그리스", "style": "한 편의 수채화 같은 그래픽 속에서 감정을 치유해 나가는 잔잔한 플랫폼 게임 🎨", "mode": "솔로 전용", "emoji": "🖌️"},
-        {"name": "데이브 더 다이버", "style": "낮에는 평화롭게 바다를 탐험하고 밤에는 초밥집을 운영하는 아늑한 라이프 🍣", "mode": "솔로 전용", "emoji": "🤿"}
-    ],
-    "INFP":
+        {"name": "\\ubaa8\\uc5ec\\ubd10\\uc694 \\ub3d9\\ubc3c\\uc758 \\uc232", "style": "\\uc8fc\\ubcc0\\uc744 \\uac00\\uafb8\\uace0 \\uc8fc\\ubbfc\\ub4e4\\uc744 \\uac59\\ub9ac\\ub294 \\ub530\\ub73b\\ud55c \\ud790\\ub9e5 \\uc2a4\\ud0c0\\uc77c", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83c\\udf43"},
+        {"name": "\\uc5b8\\ud328\\ud0b9", "style": "\\uc774\\uc0bf\\uc9짐\\uc744 \\uc815\\ud574\\uc9c4 \\uc790\\ub9ac\\uc5d0 \\ud428\\ubd84\\ud788 \\uc815\\ub9ac\\ud558\\uba70 \\ub9c8\\uc7
