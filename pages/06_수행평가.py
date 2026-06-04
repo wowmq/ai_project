@@ -1,134 +1,129 @@
 import streamlit as st
-import json
 
 # 페이지 기본 설정
 st.set_page_config(page_title="MBTI 5-Game Recommender", page_icon="🎮")
 
-st.title("✨ MBTI별 인생 게임 추천소 (5가지 버전) ✨")
-st.write("내 MBTI를 선택하면, 성향 저격 레전드 게임 5개를 꽉 채워서 추천해줄게! 🔥")
+st.title("✨ MBTI별 인생 게임 추천소 ✨")
+st.write("내 MBTI를 선택하면, 성향 저격 레전드 게임 5개를 추천해줄게! 🔥")
 
-# Python 3.14 컴파일 에러를 완벽 차단하기 위해 5개씩의 데이터를 JSON코드로 완전 격리!
-raw_json = """
-{
+# 16개 mbti별 완벽한 5개 게임 딕셔너리 데이터 (파이썬 기본 구조라 에러 절대 없음!)
+mbti_games = {
     "ISTJ": [
-        {"name": "\\uc2a4\\ud0c0\\ub4c0\\ubc38\\ub9ac", "style": "\\uaf3c\\uaf3c\\ud55c \\uacc4\\ud68d\\uacfc \\ub8e8\\ud2f4! \\ub18d\\uc7a5\\uc744 \\uacbd\\uc601\\ud558\\uba70 \\uccb4\\uacc4\\uc801\\uc73c\\ub85c \\uc131\\uc7a5\\ud558\\ub294 \\uc7ac\\ubbf8", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83d\\udc68\\u200d\\ud83c\\udf3e"},
-        {"name": "\\ud329\\ud1a0\\ub9ac\\uc624", "style": "\\ucui1c\\uc801\\uc758 \\ud6a8\\uc728\\uc744 \\uc263\\uc544 \\uacf5\\uc7a5\\uc744 \\uc790\\ub3d9\\ud654\\ud558\\ub294 \\ub450\\ub1cc \\ud480\\uac00\\ub3d9 \\uc2dc\\ubbac\\ub808\\uc774\\uc158", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83c\\udfed"},
-        {"name": "\\ud48b\\ubcbc\\ub9e4\\ub2c8\\uc800 (FM)", "style": "\\ubc29\\ub300\\ud55c \\ub370\\uc774\\ud130\\ub9bc \\ubd84\\uc11d\\ud558\\uace0 \\uad6c\\ub2e8\\uc744 \\uad00\\ub9ac\\ud558\\ub294 \\ubcc8\\uaca9 \\uacfc\\ubab0\\uc785 \\uacbd\\uc601", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udccb"},
-        {"name": "\\uc720\\ub85c \\ud2b8\\ub7ed \\uc2dc\\ubbac\\ub808\\uc774\\uc158 2", "style": "\\uad50\\ud1b5 \\ubc95\\uaddc\\ub9bc \\uc900\\uc218\\ud558\\uba70 \\uc548\\uc804\\ud558\\uac8c \\ud654\\ubb3c\\ub9bc \\uc6b4\\uc1a1\\ud558\\ub294 \\ud3e9\\ud654\\ub85c\\uc6b4 \\ubc30\\ub2ec", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83d\\ude9b"},
-        {"name": "\\ubaa8\\ub138\\ud3ec\\ub9ac (Monopoly)", "style": "\\uc790\\uc0b0\\uc744 \\ud22c\\uc790\\ud558\\uace0 \\ud68c\\uacc4\\uc801 \\uc774\\uc775\\uc744 \\uacc4\\uc0b0\\ud558\\ub294 \\uc815\\ud1b5 \\ubcf4\\ub4dc\\uac8c\\uc784 \\uc2a4\\ud0c0\\uc77c", "mode": "\\uba40\\ud220 \\uad8c\\uc7a5", "emoji": "\\ud83c\\udfb2"}
+        {"name": "스타듀밸리", "style": "꼼꼼한 계획과 루틴이 핵심! 농장을 경영하며 체계적으로 성장하는 재미", "mode": "솔로 (멀티 가능)", "emoji": "👨‍🌾"},
+        {"name": "팩토리오", "style": "최적의 효율을 찾아 공장을 자동화하는 두뇌 풀가동 시뮬레이션", "mode": "솔로 (멀티 가능)", "emoji": "🏭"},
+        {"name": "풋볼매니저 (FM)", "style": "방대한 데이터를 분석하고 구단을 관리하는 본격 과몰입 경영", "mode": "솔로 전용", "emoji": "📋"},
+        {"name": "유로 트럭 시뮬레이션 2", "style": "교통 법규를 준수하며 안전하게 화물을 운송하는 평화로운 배달", "mode": "솔로 (멀티 가능)", "emoji": "🚛"},
+        {"name": "모노폴리 (Monopoly)", "style": "자산을 투자하고 회계적 이익을 계산하는 정통 보드게임 스타일", "mode": "멀티 권장", "emoji": "🎲"}
     ],
     "ISFJ": [
-        {"name": "\\ubaa8\\uc5ec\\ubd10\\uc694 \\ub3d9\\ubc3c\\uc758 \\uc232", "style": "\\uc8fc\\ubcc0\\uc744 \\uac00\\uafb8\\uace0 \\uc8fc\\ubbfc\\ub4e4\\uc744 \\uc62c\\ubc14\\ub970 \\ub9c8\\uc74c\\uc73c\\ub85c \\ucc59\\ub9ac\\ub294 \\ub530\\ub73b\\ud55c \\ud790\\ub9e5", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83c\\udf43"},
-        {"name": "\\uc5b8\\ud328\\ud0b9 (Unpacking)", "style": "\\uc774\\uc0bf\\uc9짐\\uc744 \\uc815\\ud574\\uc9c4 \\uc790\\ub9ac\\uc5d0 \\ud428\\ubd84\\ud788 \\uc815\\ub9ac\\ud558\\uba70 \\uc548\\uc815\\uac10\\uc744 \\uc5bb\\ub294 \\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udce6"},
-        {"name": "\\uac00\\ub4e0 \\uc778", "style": "\\ub098\\ub9cc\\uc758 \\uc544\\ub291\\ud55c \\ubc29\\uc5d0\\uc11c \\uc544\\ub0bc\\uc790\\uae30\\ud55c \\uc2dd\\ubacb\\ub4e4\\uc744 \\uc815\\uc131\\uaddf \\ud0a4\\uc6b0\\ub224 \\ud790\\ub9e5", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\🪴"},
-        {"name": "\\ud558\\uc6b0\\uc2a4 \\ud50c\\ub9ac\\ud37c", "style": "\\ub354\\ub7ec\\uc6b4 \\uc9d1\\uc744 \\uae68\\ub057\\ud558\\uac8c \\ucead\\uc18c\\ud558\\uace0 \\uc778\\ud14c\\ub9ac\\uc5b4\\ub9bc \\uac1c\\uc870\\ud558\\ub294 \\ubcf4\\ub78c", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\uddf9"},
-        {"name": "\\uace0\\uc591\\uc774\\ub294 \\ubca9 \\ub9c8\\ub9ac\\ub098 \\uc7ac\\ubbf8", "style": "\\ud654\\uba74 \\uc14d\\uc5d0 \\uc228\\uc5b4\\uc788\\ub224 \\uace0\\uc591\\uc774\\ub4e4\\uc744 \\uc0ac\\ub791\\uc73c\\ub85c \\uc263\\ub224 \\uc22c\\uc740\\uae3c\\ub9bc\\uc263\\uae30", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udc31"}
+        {"name": "모여봐요 동물의 숲", "style": "주변을 가꾸고 주민들을 올바른 마음으로 챙기는 따뜻한 힐링", "mode": "솔로 (멀티 가능)", "emoji": "🍃"},
+        {"name": "언패킹 (Unpacking)", "style": "이삿짐을 정해진 자리에 차분히 정리하며 안정감을 얻는 게임", "mode": "솔로 전용", "emoji": "📦"},
+        {"name": "가든 인", "style": "나만의 아늑한 방에서 아기자기한 식물들을 정성껏 키우는 힐링", "mode": "솔로 전용", "emoji": "🪴"},
+        {"name": "하우스 플리퍼", "style": "더러운 집을 깨끗하게 청소하고 인테리어를 개조하는 보람", "mode": "솔로 전용", "emoji": "🧹"},
+        {"name": "고양이는 몇 마리나 있지", "style": "화면 속에 숨어있는 고양이들을 사랑으로 찾는 숨은그림찾기", "mode": "솔로 전용", "emoji": "🐱"}
     ],
     "INFJ": [
-        {"name": "\\uc5b8\\ub354\\ud14c\\uc77c", "style": "\\uc2ec\\uc624\\ud55c \\uc2a4\\ud1a0\\ub9ac\\uc624 \\ud14c\\ub7ac\\ud55c \\uc120\\ud0dd! \\ub0b4 \\uc120\\ud0dd\\uc5d0 \\ub530\\ub7bc \\uacb0\\ub9d0\\uc774 \\ubc14\\u00ac\\ub224 \\uac10\\uc131", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udc80"},
-        {"name": "\\uc624\\ub9ac\\uc640 \\ub3c4\\uae68\\ube44\\bul", "style": "\\ud55c\\ud3b8\\uc758 \\uc544\\ub984\\ub2e4\\uc6b4 \\ub3d9\\ud654 \\uc14d \\uc8fc\\uc778\\uacf5\\uc774 \\ub418\\uc5b4 \\uac10\\ub3d9\\uc801\\uc778 \\uc11c\\uc0ac\\ub9bc \\ud0d0\\ud5d8", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\udd89"},
-        {"name": "\\ub514\\uc2a4\\ucf54 \\uc5d8\\ub9ac\\uc2dc\\uc6c0", "style": "\\uc778\\uac04\\uc758 \\ub0b4\\uba74\\uac2c \\uae4a\\uc740 \\ud420\\ud559\\uc801 \\uba54\\uc2dc\\uc9c0\\ub9bc \\ucd94\\ub9ac\\ud558\\ub224 \\uc6b0\\uba54\\uc774\\ub4dc", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\udd43"},
-        {"name": "\\ub514\\ud2b8\\ub85c\\uc774\\ud2b8: \\ube44\\ud0f4 \\ud734\\uba3c", "style": "\\uc778\\uacf5\\uc9c0\\ub2a5\\uc774 \\uac10\\uc815\\uc744 \\uac00\\uc9c0\\uba74 \\uc5b4\\ub5bb\\uac8c \\ub410\\uae4c? \\uc778\\uac04\\uc131\\uc744 \\ubee3\\ub224 \\uc120\\ud0dd RPG", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\udd16"},
-        {"name": "\\uc653 \\ub9ac\\ub9e4\\uc778\\uc988 \\uc624\\ube0c \\uc5d0\\ub514\\uc2a4 \\ud540\\uce58", "style": "\\ud55c \\uac00\\ubb38\\uc758 \\ube44\\uadf9\\uc801\\uc778 \\uc774\\uc5bc\\uae30\\ub9bc \\ub3c5\\ud2b9\\ud55c \\uc5f0\\ucd9c\\ub85c \\ud0d0\\ud5d8\\ud558\\ub224 \\uc608\\uc220\\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83c\\udfe0"}
+        {"name": "언더테일", "style": "심오한 스토리와 스토리텔링! 내 선택에 따라 결말이 바뀌는 감성", "mode": "솔로 전용", "emoji": "💀"},
+        {"name": "오리와 도깨비불", "style": "한 편의 아름다운 동화 속 주인공이 되어 감동적인 서사를 탐험", "mode": "솔로 전용", "emoji": "🦉"},
+        {"name": "디스코 엘리시움", "style": "인간의 내면을 깊게 파고드는 철학적 메시지를 추리하는 웰메이드 RPG", "mode": "솔로 전용", "emoji": "🥃"},
+        {"name": "디트로이트: 비컴 휴먼", "style": "인공지능이 감정을 가지면 어떻게 될까? 인간성을 묻는 선택형 영화 같은 게임", "mode": "솔로 전용", "emoji": "🤖"},
+        {"name": "왓 리메인즈 오브 에디스 핀치", "style": "한 가문의 비극적인 이야기를 독특한 연출로 탐험하는 예술 게임", "mode": "솔로 전용", "emoji": "🏠"}
     ],
     "INTJ": [
-        {"name": "\\uc2dc\\ud2f0\\uc988: \\uc2a4\\ud0ac\\ub7bc\\uc778", "style": "\\uc644\\ubcbd\\ud55c \\ub3c4\\uc2dc \\uad50\\ud1b5\\ub9dd\\uacfc \\uad6c\\uc5ed\\uc744 \\uc124\\uacc4\\ud558\\ubaec \\ub3c4\\uc2dc\\ub9bc \\uc644\\ubcbd \\ud1b5\\uc81c", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udcd0"},
-        {"name": "\\uc2ac\\ub808\\uc774 \\ub354 \\uc2a4\\ud30c\\uc774\\uc5b4", "style": "\\ud1a0\\uc800\\ud55c \\uacc4\\uc1b0\\uacfc \\ud655\\ub960\\uc744 \\ubc14\\ud0d5\\uc73c\\ub85c \\ub098\\ub9cc\\uc758 \\ucui1c\\uac15 \\ub371\\uc744 \\uc9dc\\ub224 \\uc804\\ub7b5", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udd2e"},
-        {"name": "\\uce24\\uc2a4", "style": "\\uc0c1\\ub300\\uc758 \\ubaa7 \\uc218 \\uc555\\uc744 \\ub0b4\\ub2e4\\ubcf4\\uba70 \\uc624\\uc9c1 \\uc218\\uc4f8\\uc6c0\\uc73c\\ub85c\\ub9cc \\uc1b9\\ubd80", "mode": "\\uc194\\ub85c & \\uba40\\ud220 \\ubaa8\\ub450 \\uc9c0\\uc6d0", "emoji": "\\ud83d\\udc51"},
-        {"name": "\\uc5d1\\uc2a4\\ucef4 (XCOM) \\uc2dc\\ub9ac\\uc988", "style": "\\ud655\\ub960\\uacfc \\uc804\\ud3ec\\uc801 \\uc704\\uce68\\ub9bc \\uacc4\\uc0b0\\ud558\\uc5ec \\uc678\\uacc4\\uc778\\uc744 \\uc18c\\ud0d5\\ud558\\ub224 \\ud134\\uc81c \\uc804\\ub7b5", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udc7d"},
-        {"name": "\\ud50c\\ub808\\uc774\\uadf8 \\uc778\\ud06c (Plague Inc.)", "style": "\\uc804 \\uc138\\uacc4\\uc5d0 \\ubc14\\uc774\\ub7ec\\uc2a4\\ub9bc \\ud37c\\ud2b8\\ub9ac\\ub224 \\uc9c0\\ub2a5\\uc801\\uc778 \\uc804\\ub7b5 \\uc2dc\\ubbac\\ub808\\uc774\\uc158", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\udda0"}
+        {"name": "시티즈: 스카이라인", "style": "완벽한 도시 교통망과 구역을 설계하며 도시를 통제", "mode": "솔로 전용", "emoji": "📐"},
+        {"name": "슬레이 더 스파이어", "style": "철저한 계산과 확률을 바탕으로 나만의 최강 덱을 짜는 전략", "mode": "솔로 전용", "emoji": "🔮"},
+        {"name": "체스", "style": "상대의 몇 수 앞을 내다보며 오직 수싸움으로만 승부하는 지적 대결", "mode": "솔로 & 멀티 모두 지원", "emoji": "👑"},
+        {"name": "엑스컴 (XCOM) 시리즈", "style": "확률과 전술적 위치를 계산하여 외계인을 소탕하는 턴제 전략", "mode": "솔로 전용", "emoji": "👽"},
+        {"name": "플레이그 인크 (Plague Inc.)", "style": "전 세계에 바이러스를 퍼뜨리는 지능적인 전략 시뮬레이션", "mode": "솔로 전용", "emoji": "🦠"}
     ],
     "ISTP": [
-        {"name": "\\ub9c8\\uc778\\ud06c\\ub798\\ud504\\ud2b8", "style": "\\ub3c4\\uad6c\\ub9bc \\ub9cc\\ub4e0\\uace0 \\uc138\\uc0c1\\uc744 \\ub0b4 \\ub9c8\\uc74c\\ub300\\ub85c \\uac1c\\uc870\\ud558\\ub224 \\uc9c4\\uc815\\ud55c \\uc790\\uc720\\ub3c4", "mode": "\\uc194\\ub85c & \\uba40\\ud220 \\ubaa8\\ub450 \\uc9c0\\uc6d0", "emoji": "\\u26cf\\ufe0f"},
-        {"name": "\\ubaac\\uc2a4\\ud130 \\ud5cc\\ud130 \\uc6d4\\ub4dc", "style": "\\ubb34\\uae30 \\uace0\\uc720\\uc758 \\uba54\\uc4e4\\ub2c8\\uc998\\uc744 \\ub9c8\\uc2a4\\ud130\\ud558\\uace0 \\uac70\\ub300 \\uad34\\uc218\\ub9bc \\uc0ac\\ub0e5", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\u2694\\ufe0f"},
-        {"name": "\\uc backcountry \\ub7ec\\uc9c0 \\uc62c\\ub2e4", "style": "\\ubb3c\\ub9ac \\uc5d4\\uc9c4\\uc744 \\ud65c\\uc6a5\\ud574 \\ub0b4 \\ubc29\\uc2dd\\ub300\\ub85c \\ubc35\\uc744 \\uacf5\\ub7b5\\ud558\\ub224 \\uc624\\ud508\\uc6d4\\ub4dc", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udee1\\ufe0f"},
-        {"name": "\\uc0ac\\uc774\\ubc84\\ud3cd\\ud06c 2077", "style": "\\ub0b4 \\ub9c8\\uc74c\\ub300\\ub85c \\uc2e0\\uccb4\\ub9bc \\uac1c\\uc870\\ud558\\uace0 \\ubbf8\\ub798 \\ub3c4\\uc2dc\\ub9bc \\ub204\\ube44\\ub224 \\ub9cc\\ubc29 \\uc561\\uc158 RPG", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\uddbe"},
-        {"name": "\\ub7ec\\uc2a4\\ud2b8 (Rust)", "style": "\\ub9e8\\ubeb8\\uc73c\\ub85c \\uc2dc\\uc791\\ud574\\uc11c \\ub3c4\\uad6c\\ub9bc \\ub9cc\\ub4e0\\uace0 \\uae30\\uc9c0\\ub9bc \\uc9c0\\uc5b4 \\uc0dd\\uc874\\ud558\\ub224 \\ud558\\ub4dc\\ucf54\\uc5b4 \\uac8c\\uc784", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83d\\udd28"}
+        {"name": "마인크래프트", "style": "도구를 만들고 세상을 내 마음대로 개조하는 진정한 자유도", "mode": "솔로 & 멀티 모두 지원", "emoji": "⛏️"},
+        {"name": "몬스터 헌터 월드", "style": "무기 고유의 메커니즘을 마스터하고 거대 괴수를 사냥하는 피지컬", "mode": "솔로 (멀티 가능)", "emoji": "⚔️"},
+        {"name": "젤다의 전설 브레스 오브 더 와일드", "style": "물리 엔진을 활용해 내 방식대로 맵을 공략하는 오픈월드", "mode": "솔로 전용", "emoji": "🛡️"},
+        {"name": "사이버펑크 2077", "style": "내 마음대로 신체를 개조하고 미래 도시를 누비는 액션 RPG", "mode": "솔로 전용", "emoji": "🦾"},
+        {"name": "러스트 (Rust)", "style": "맨몸으로 시작해서 도구를 만들고 기지를 지어 생존하는 하드코어 게임", "mode": "멀티 전용", "emoji": "🔨"}
     ],
     "ISFP": [
-        {"name": "\\uc800\\ub2c8", "style": "\\uc544\\ub984\\ub2e4\\uc6b4 \\uc601\\uc0c1\\ubbf8\\uc640 \\uc74c\\uc545\\uc744 \\uc990\\uae30\\uba70 \\uc815\\uccb2 \\uc5c6\\uc774 \\ub5a0\\ub098\\ub224 \\uc608\\uc220\\uc801 \\ud790\\ub9e5", "mode": "\\uc194\\ub85c (\\ub79c\\ub364 \\ub9cc\\ub0a8 \\uac00\\ub2a5)", "emoji": "\\ud83e\\udde3"},
-        {"name": "\\uac38\\ub9ac\\uc2a4 (GRIS)", "style": "\\ud55c \\ud3b8\\uc758 \\uc218\\ucc44\\ud654 \\uac19\\uc740 \\ub178\\ud3ec\\ubbfc \\uc14d\\uc5d0\\uc11c \\uac10\\uc815\\uc744 \\uc158\\uc720\\ud558\\ub224 \\ud50c\\ub7ab\\ud3fc", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83c\\udfa8"},
-        {"name": "\\ub370\\uc774\\ube0c \\ub354 \\ub2e4\\uc774\\ube04", "style": "\\ub0ae\\uc5d0\\ub224 \\ud3c9\\ud654\\ub86d\\uac8c \\ubc14\\ub2e4\\ub9bc \\ud0d0\\ud5d8\\ud558\\uace0 \\ubc24\\uc5d0\\ub224 \\ucd08\\bc25\\uc9d1 \\uc6b4\\uc601", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83c\\udf63"},
-        {"name": "\\uc544\\ubc14\\uc8fc (ABZU)", "style": "\\uc544\\ub984\\ub2e4\\uc6b4 \\ubc14\\ub2e4\\uc14d\\uc744 \\ud5e4\\uc5bc\\uce58\\uba70 \\ud574\\uc591 \\uc0dd\\ubb3c\\ub4e4\\uacfc \\uad50\\uac10\\ud558\\ub224 \\uc608\\uc220 \\ud790\\ub9e5\\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udc2c"},
-        {"name": "\\uc2a4\\ub7bc\\ub77c\\uc784 \\ub79c\\uccd0", "style": "\\ub9d0\\ub9d0\\ud55c \\uac00\\uc6b0\\ub9b0 \\uc2a4\\ub7bc\\ub77c\\uc784\\ub4e4\\uc744 \\uc218\\uc9d1\\ud558\\uace0 \\ud0a4\\uc6b0\\ub224 \\uae30\\uc5ec\\uc6b4 \\ub18d\\uc7a5 \\uacbd\\uc601", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\uddc3"}
+        {"name": "저니 (Journey)", "style": "아름다운 영상미와 음악을 즐기며 정처 없이 떠나는 예술적 힐링", "mode": "솔로 (랜덤 만남 가능)", "emoji": "🧣"},
+        {"name": "그리스 (GRIS)", "style": "한 편의 수채화 같은 연출 속에서 감정을 치유하는 플랫포머", "mode": "솔로 전용", "emoji": "🎨"},
+        {"name": "데이브 더 다이버", "style": "낮에는 평화롭게 바다를 탐험하고 밤에는 초밥집을 운영하는 재미", "mode": "솔로 전용", "emoji": "🍣"},
+        {"name": "압주 (ABZU)", "style": "아름다운 바다 속을 헤엄치며 해양 생물들과 교감하는 예술 힐링", "mode": "솔로 전용", "emoji": "🐬"},
+        {"name": "슬라임 랜처", "style": "말랑말랑한 슬라임들을 수집하고 키우는 귀여운 농장 경영", "mode": "솔로 전용", "emoji": "🥛"}
     ],
     "INFP": [
-        {"name": "\\uc2a4\\ud0ac: \\ube5b\\uc758 \\uc544\\uc774\\ub4e4", "style": "\\ubabd\\ud658\\uc801\\uc778 \\ud558\\ub298\\uc744 \\ub0a0\\uc544\\ub2e4\\ub2ec\\uba70 \\ud3c9\\ud654\\ub9bc \\uc804\\ud30c\\ud558\\ub224 \\uac10\\uc131 \\ud05d\\ud310\\uc655", "mode": "\\uc194\\ub85c & \\uba40\\ud220 \\ubaa8\\ub450 \\uc9c0\\uc6d0", "emoji": "\\u2728"},
-        {"name": "\\uc634\\uc624\\ub9ac (OMORI)", "style": "\\uac48\\uacfc \\ud604\\uc2e4\\uc744 \\uc624\\uac00\\uba70 \\ub0b4\\uba74\\uc758 \\uae4a\\uc740 \\uc0c1\\subec8\\uc640 \\uae30\\uc5b5\\uc744 \\ub9c8\\uc9c0\\ud558\\ub224 RPG", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83c\\udfbb"},
-        {"name": "\\ud22c \\ub354 \\ubb38", "style": "\\uae30\\uc5b5\\uc744 \\ubc14\\uaccf \\uc18c\\uc6d0\\uc744 \\ub4e4\\uc5b4\\uc8fc\\ub224 \\uac10\\ub3d9\\uc801\\uc778 \\uc2a4\\ud1a0\\ub9ac \\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83c\\udf19"},
-        {"name": "\\uc0ac\\ub78c\\uc740 \\ubb34\\uc5c7\\uc73c\\ub85c \\uc0ac\\ub294\\uac00 (Life is Strange)", "style": "\\uc2dc\\uac04\\ub9bc \\ub418\\ub3cc\\ub9ac\\ub224 \\ub225\\ub825\\uc73c\\ub85c \\uce5c\\uad6c\\ub9bc \\uad6c\\ud558\\uace0 \\uc120\\ud0dd\\uc758 \\ubb34\\uac8c\\ub9bc \\ubee3\\ub224 \\ub4dc\\ub7bc\\ub9c8", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\udd8b"},
-        {"name": "\\ub098\\uc774\\ud2b8 \\uc778 \\ub354 \\uc6b0\\ud4b8", "style": "\\ub300\\ud559\\uc744 \\uc790\\ud1f4\\ud558\\uace0 \\uace0\\ud5a5\\uc73c\\ub85c \\ub3cc\\uc544\\uc624 \\uace0\\uc591\\uc774 \\uc8fc\\uc778\\uacf5\\uc758 \\uccad\\ucd98 \\ubc29\\ud669 \\uc2a4\\ud1a0\\ub9ac", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83c\\udf9b"}
+        {"name": "스카이: 빛의 아이들", "style": "몽환적인 하늘을 날아다니며 평화를 전파하는 감성 끝판왕", "mode": "솔로 & 멀티 모두 지원", "emoji": "✨"},
+        {"name": "오모리 (OMORI)", "style": "꿈과 현실을 오가며 내면의 깊은 상처와 기억을 마주하는 RPG", "mode": "솔로 전용", "emoji": "🎻"},
+        {"name": "투 더 문", "style": "기억을 바꾸어 소원을 들어주는 감동적인 스토리 중심 게임", "mode": "솔로 전용", "emoji": "🌙"},
+        {"name": "라이프 이즈 스트레인지", "style": "시간을 되돌리는 능력으로 친구를 구하고 선택의 무게를 배우는 드라마", "mode": "솔로 전용", "emoji": "🦋"},
+        {"name": "나이트 인 더 우즈", "style": "대학을 자퇴하고 고향으로 돌아온 고양이 주인공의 청춘 방황 스토리", "mode": "솔로 전용", "emoji": "🎛️"}
     ],
     "INTP": [
-        {"name": "\\ud3ec\\ud0ac \\uc2dc\\ub9ac\\uc988", "style": "\\ubb3c\\ub9ac\\ud559 \\ubc15\\ud061\\uc744 \\uc774\\uc6a5\\ud574 \\uacf5\\uac04\\ub9bc \\ub118\\ub098\\ub4e4\\ub224 \\ud02c\\uc7ac\\uc801\\uc778 \\ud3cd\\uc990 \\ud574\\uacb0", "mode": "\\uc194\\ub85c (2\\ud3b8\\uc740 \\uba40\\ud220)", "emoji": "\\ud83c\\udf00"},
-        {"name": "\\ubc14\\ubc14 \\uc774\\uc988 \\uc720", "style": "\\uac8c\\uc784\\uc758 \\uaddc\\ud061 \\uc790\\uccb4\\ub9bc \\ucf54\\ub529\\ud558\\ub4ef \\ub72f\\uc5b4\\uace0\\uccd0 \\uae68\\ub224 \\ub1cc\\uc139 \\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udc30"},
-        {"name": "\\uc544\\uc6b0\\ud130 \\uc640\\uc77c\\uc988", "style": "22\\ubd84\\ub9ec\\ub2e4 \\ubca9\\ub9dd\\ud558\\ub224 \\uc6b0\\uc8fc\\uc758 \\ube44\\ubc00\\uc744 \\ud478\\ub224 \\ubcc8\\uaca9 \\uc6b0\\uc8fc \\ud0d0\\uc0ac", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\ude90"},
-        {"name": "\\ub2e4\\uc624\\uc2a4 \\ud504\\ub85c\\uc81d\\ud2b8 (The Talos Principle)", "style": "\\uc778\\uacf5\\uc9c0\\ub2a5 \\ub85c\\ubd07\\uc774 \\ub418\\uc5b4 \\uace0\\ub300 \\uc720\\uc801\\uc5d0\\uc11c \\uace0\\ub09c\\uc774\\ub3c4 \\ubb3c\\ub9ac \\ud3cd\\uc990\\ub9bc \\ud46c\\ub224 \\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\udde0"},
-        {"name": "\\uc2a4\\ud06c\\ub9ac\\ube14\\ub108\\uce20", "style": "\\ub0b4\\uac00 \\uc0c1\\uc0c1\\ud558\\ub224 \\ub2e8\\uc5b4\\ub9bc \\ud0c0\\uc774\\ud551\\ud558\\uba74 \\ud654\\uba74\\uc5d0 \\ubb3c\\uac74\\uc774 \\uc0dd\\uaca8\\ub098\\uc11c \\ubb38\\uc81c\\ub9bc \\ud574\\uacb0\\ud558\\ub224 \\ucc3d\\uc758\\ub825 \\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\udd21"}
+        {"name": "포탈 시리즈", "style": "물리학 법칙을 이용해 공간을 넘나드는 명작 퍼즐 해결", "mode": "솔로 (2편은 멀티 가능)", "emoji": "🌀"},
+        {"name": "바바 이즈 유", "style": "게임의 규칙 자체를 코딩하듯 뜯어고쳐 깨는 뇌섹 퍼즐 게임", "mode": "솔로 전용", "emoji": "🐰"},
+        {"name": "아우터 와일즈", "style": "22분마다 멸망하는 우주의 비밀을 푸는 본격 우주 탐사 추리", "mode": "솔로 전용", "emoji": "🪐"},
+        {"name": "탈로스 법칙", "style": "인공지능 로봇이 되어 고대 유적에서 고난이도 물리 퍼즐을 푸는 게임", "mode": "솔로 전용", "emoji": "🧠"},
+        {"name": "스크리블너츠", "style": "내가 상상하는 단어를 타이핑하면 물건이 생겨나서 문제를 해결하는 창의력 게임", "mode": "솔로 전용", "emoji": "🤡"}
     ],
     "ESTP": [
-        {"name": "\\uc5d0\\uc774\\ud329\\uc2a4 \\ub808\\uc804\\ub4dc", "style": "\\ubc14\\ub978 \\uc18d\\ub3c4\\uac10\\uacfc \\ud654\\ub824\\ud55c \\uc2a4\\ud0ac! \\uc804\\uc7a5\\uc744 \\ud619\\uc4f0\\ub224 \\ud53c\\uc9c0\\ud3ec FPS", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83d\\udd2b"},
-        {"name": "GTA 5", "style": "\\uc9c0\\ub8e8\\ud560 \\ud2c8\\uc774 \\uc5c6\\ub2e4! \\ub113\\uc740 \\ub3c4\\uc2dc\\uc5d0\\uc11c \\ud558\\uace0 \\uc2f6\\uc740 \\ubaa8\\ub4e0 \\uac78 \\uc780\\uc9c0\\ub224 \\uc790\\uc720", "mode": "\\uc194\\ub85c & \\uba40\\ud220 \\ubaa8\\ub450 \\uc9c0\\uc6d0", "emoji": "\\ud83d\\udcb0"},
-        {"name": "FC \\uc2dc\\ub9ac\\uc988", "style": "\\ud654\\ub824\\ud55c \\uac1c\\uc778\\uae30\\uacfc \\uc2a4\\ud53c\\ub514\\ud55c \\uacbd\\uae30\\ub85c \\uc0c1\\ub300\\ub9bc \\uc555\\ub3c4\\ud558\\ub224 \\uc2a4\\ud3ec\\ucuce20", "mode": "\\uc194\\ub85c & \\uba40\\ud220 \\ubaa8\\ub450 \\uc9c0\\uc6d0", "emoji": "\\ud83c\\udfc3\\u200d\\ub9e2"},
-        {"name": "\\uc624\\ubc84\\uc6cc\\uce24 2", "style": "\\ub0b4\\uac00 \\uc601\\uc6c5\\uc774 \\ub418\\uc5b4 \\ud300\\uc6d0\\ub4ee\\uacfc \\ube60\\ub978 \\ud15c\\ud3ec\\ub85c \\uacbd\\uae30\\ub9bc \\ub9ac\\ub4dc\\ud558\\ub224 \\ud558\\uc774\\ud37c \\uc288\\ud305\\uac8c\\uc784", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83d\\udee1\\ufe0f"},
-        {"name": "\\ub7ec\\ub108\\uc2a4 \\ud558\\uc774 (Forza Horizon)", "style": "\\uc624\\ud508\\uc6d4\\ub4dc \\ub3c4\\ub85c\\ub9bc \\uc288\\ud37c\\uce74\\ub85c \\ucea0\\uc18d\\ud558\\uba70 \\uc2a4\\ud53c\\ub514\\ud55c \\ub808\\uc774\\uc2f1\\uc744 \\uc990\\uae30\\ub224 \\uc9dc\\ub9bf\\ud568", "mode": "\\uc194\\ub85c & \\uba40\\ud220 \\ubaa8\\ub450 \\uc9c0\\uc6d0", "emoji": "\\ud83c\\udfce\\ufe0f"}
+        {"name": "에이펙스 레전드", "style": "빠른 속도감과 화려한 스킬! 전장을 휩쓰는 피지컬 FPS", "mode": "멀티 전용", "emoji": "🔫"},
+        {"name": "GTA 5", "style": "지루할 틈이 없다! 넓은 도시에서 하고 싶은 모든 걸 하는 높은 자유도", "mode": "솔로 & 멀티 모두 지원", "emoji": "💰"},
+        {"name": "FC 시리즈 (피파)", "style": "화려한 개인기와 스피디한 경기로 상대를 압도하는 스포츠 대결", "mode": "솔로 & 멀티 모두 지원", "emoji": "🏃‍♂️"},
+        {"name": "오버워치 2", "style": "내가 영웅이 되어 팀원들과 빠른 템포로 경기를 리드하는 하이퍼 슈팅", "mode": "멀티 전용", "emoji": "🛡️"},
+        {"name": "포르자 호라이즌", "style": "오픈월드 도로를 슈퍼카로 질주하며 스피디한 레이싱을 즐기는 짜릿함", "mode": "솔로 & 멀티 모두 지원", "emoji": "🏎️"}
     ],
     "ESFP": [
-        {"name": "\\uc800\\uc2a4\\ud2b8 \\ub304\\uc2a4", "style": "\\ub9ac\\ub4ec\\uc5d0 \\ubaa8\\uc744 \\ub9e1\\uae30\\uace0 \\uc2e0\\ub098\\uac8c \\ud664\\ub4e4\\uba70 \\uc5d0\\ub108\\uc9c0\\ub9bc \\ubc1c\\uc0b0\\ud558\\ub224 \\ud30c\\ud2f0", "mode": "\\uc194\\ub85c & \\uba40\\ud220 \\ubaa8\\ub450 \\uc9c0\\uc6d0", "emoji": "\\ud83e\\ude81"},
-        {"name": "\\ub85c\\ube14\\ub85d\\uc2a4", "style": "\\ub9e4\\uc77c \\uc0c8\\ub85c\\uc6b4 \\ubbf8\\ub2c8\\uac8c\\uc784\\uacfc \\ubc35\\uc5d0\\uc11c \\ud22c\\uad6c\\ub4e4\\uacfc \\uc6b0\\ub2f9\\ud0d5\\ud0d5 \\ub178\\ub224 \\ub100\\ubc84\\uc2a4", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83e\\uddf1"},
-        {"name": "\\ud0dc\\uace0\\uc758 \\ub2ec\\uc778", "style": "\\uc2e0\\ub098\\ub224 \\ub178\\ub798 \\ube44\\ud2b8\\uc5d0 \\ub9de\\ucd94\\ubc94 \\ubd81\\uc744 \\ub450\\ub4dc\\ub9ac\\ub224 \\uc2a4\\ud2b8\\ub808\\uc2a4 \\ud0c0\\ud30c", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83d\\udd34"},
-        {"name": "\\ud3f4\\uac00\\uc774\\uc988", "style": "\\uadc0\\uc5ec\\uc6b4 \\uc778\\ud615\\ub4e4\\uc744 \\uc870\\uc791\\ud558\\uc5ec \\uc6b0\\ub2f9\\ud0d5\\ud0d5 \\uc0bc\\uc2ed\\uba85 \\uc11c\\ubc14\\uc774\\ubc8c \\ub7f0\\ub2dd\\uac8c\\uc784", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83d\\udc27"},
-        {"name": "\\uc5bc\\uc74c\\uacfc \\ubd88\\uc758 \\ub178\\ub798 (ADOFAI)", "style": "\\ud0d1\\ub098\\ub224 \\ud68c\\uc804 \\ubcfc\\uc744 \\ubc15\\uc790\\uc5d0 \\ub9de\\ucdb0 \\ud02c\\ub9bf\\ud558\\ub224 \\ucd08\\uace0\\ub09c\\uc774\\ub3c4 \\ub9ac\\ub4ec \\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udd35"}
+        {"name": "저스트 댄스", "style": "리듬에 몸을 맡기고 신나게 흔들며 에너지를 발산하는 파티 게임", "mode": "솔로 & 멀티 모두 지원", "emoji": "🪩"},
+        {"name": "로블록스", "style": "매일 새로운 미니게임과 맵에서 친구들과 우당탕탕 노는 놀이터", "mode": "멀티 전용", "emoji": "🧱"},
+        {"name": "태고의 달인", "style": "신나는 노래 비트에 맞춰 북을 두드리는 스트레스 타파 리듬게임", "mode": "솔로 (멀티 가능)", "emoji": "🔴"},
+        {"name": "폴가이즈", "style": "귀여운 인형들을 조작하여 우당탕탕 서바이벌 런닝 게임", "mode": "멀티 전용", "emoji": "🐧"},
+        {"name": "얼음과 불의 노래 (ADOFAI)", "style": "신나게 회전하는 볼을 박자에 맞춰 클릭하는 중독성 리듬 게임", "mode": "솔로 전용", "emoji": "🔵"}
     ],
     "ENFP": [
-        {"name": "\\ud3ec \\uac00\\uc774\\uc988", "style": "\\uc608\\uc측 \\ube4c\\ud5c8\\ud55c \\uc0c1\\ud669 \\uc14d\\uc5d0\\uc11c \\uc6b0\\ub2f9\\ud0d5\\ud0d5 \\uc21c\\uc704 \\uacbd\\uc7c1\\uc744 \\ud3bc\\uce58\\ub224 \\uc11c\\ubc14\\uc774\\ubc8c", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83d\\udc51"},
-        {"name": "\\ub108\\ub4dc \\ub370\\ub4dc \\ub9ac\\ub384\\uc158 2", "style": "\\guac14\\ud65c\\ud55c \\uc11c\\ubd80 \\uc2dc\\ub300\\ub9bc \\ub098\\ub9cc\\uc758 \\ubc29\\uc2dd\\ub300\\ub85c \\ubc45\\ub791\\ud558\\uace0 \\ud0d0\\ud5d8\\ud558\\ub224 \\ub85c\\ub9dd", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\uc14e"},
-        {"name": "\\ud30c\\ud2f0 \\uc560\\ub2c8\\ubab0\\uc988", "style": "\\ud750\\ubb3c\\uac70\\ub9ac\\ub224 \\uc778\\ud615 \\uac99\\uc740 \\ub3d9\\ubb3c\\ub4e4\\uc774 \\ub418\\uc5b4 \\ub09c\\uc7a5\\ud310 \\ubab8\\uc4f8\\uc6c0 \\ube45\\uc7ac\\ubbf8", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83e\\udd4a"},
-        {"name": "\\ud558\\uc774\\ud53c\\uc2a4 \\ub7ec\\uc2dc", "style": "\\ub9ac\\ub4ec\\uc5d0 \\ub9de\\ucdb0 \\uc801\\ub4e4\\uc744 \\ub54c\\ub824\\ubd80\\uc228\\ub224 \\ub9cc\\ud654 \\uac19\\uc740 \\ud03c\\uc7ac\\ud55c \\ub9ac\\ub4ec \\uc561\\uc158\\uac8c\\uc784", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83c\\udfb8"},
-        {"name": "\\uad34\\ubb3c \\ud30c\\ud2f0 (Gangs Beasts)", "style": "\\ubab8\\uc744 \\f\\ub204\\ub204 \\uce5c\\uad6c\\ub4e4\\uc744 \\ub3e4\\uc9c0 \\ubc11\\uc73c\\ub85c \\ub358\\uc9c0\\ub224 \\uacb9\\ub3d9 \\ub09c\\ud22c \\ud30c\\ud2f0\\uac8c\\uc784", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83e\\udd3c"}
+        {"name": "폴 가이즈", "style": "예측 불허한 상황 속에서 우당탕탕 순위 경쟁을 펼치는 서바이벌", "mode": "멀티 전용", "emoji": "👑"},
+        {"name": "레드 데드 리뎀션 2", "style": "광활한 서부 시대를 나만의 방식대로 방랑하고 탐험하는 로망", "mode": "솔로 (멀티 가능)", "emoji": "🤠"},
+        {"name": "파티 애니멀즈", "style": "흐물거리는 인형 같은 동물들이 되어 난장판 몸싸움 빅재미", "mode": "멀티 전용", "emoji": "🥊"},
+        {"name": "하이파이 러시", "style": "리듬에 맞춰 적들을 때려부수는 만화 같은 유쾌한 리듬 액션", "mode": "솔로 전용", "emoji": "🎸"},
+        {"name": "갱비스트 (Gang Beasts)", "style": "몸을 가누지 못하는 친구들을 난간 밑으로 던지는 난투 파티게임", "mode": "멀티 전용", "emoji": "🤼"}
     ],
     "ENTP": [
-        {"name": "\\uc5b4\\ubabd \\uc5b4\\uc2a4", "style": "\\ud654\\ub824\\ud55c \\ub9d0\\ube68\\uacfc \\uc2ec\\ub9ac\\uc804\\uc73c\\ub85c \\uc0c1\\ub300\\ub9bc \\uc18d\\uc774\\uace0 \\ucd94\\ub9ac\\ud558\\ub224 \\uc8ref\\ub7b5", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83d\\ude80"},
-        {"name": "\\uad6c\\uc988\\uad6c\\uc988\\ub355", "style": "\\ub2e4\\uc591\\ud55c \\ud2b9\\uc218 \\uc9c1\\uc5c5\\ub4e4\\ub85c \\ud310\\uc744 \\ub4a4\\ud754\\uace0 \\uc608\\uce21 \\ube4c\\uac00\\ub2a5\\ud55c \\uc815\\uce58", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83c\\udfa4"},
-        {"name": "\\ubb38\\uba85 6", "style": "\\u2018\\ud55c \\ud134\\ub9cc \\ub354...\\u2019 \\uc628\\uac22 \\ubcc0\\uc218\\uacfc \\uc678\\uad50, \\uc804\\uc7a5\\uc744 \\ub098\\ub9cc\\uc758 \\uae30\\ubc1c\\ud55c \\ud2b8\\ub864\\ub9c1\\uc73c\\ub85c \\uc815\\ubcf5", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83d\\udc51"},
-        {"name": "\\ud50c\\ub808\\uc774\\ud2b8 \\uc5c5 (PlateUp!)", "style": "\\uc694\\ub9ac\\ub3c4 \\ud558\\uace0 \\uac00\\uac8c \\ub3d9\\uc120\\ub3c4 내 마음대로 개조하며 트롤링하는 식당 로그라이크", "mode": "\\uba40\\ud220 \\uad8c\\uc7a5", "emoji": "\\ud83c\\udf7d\\ufe0f"},
-        {"name": "\\ub354 \\uc7ac\\ud0ac\\ubc15\\uc2a4 \\ud30c\\ud2f0 \\ud329", "style": "\\uc2a4\\ub9c8\\ud2b8\\ud3ec\\uc744 \\ub9ac\\ubaa8\\ucee8\\uc73c\\ub85c \\uc368\\uc11c \\ud669\\ub2e9\\ud55c \\ud0b4\\uc988\\uc640 \\ud3bc\\uc9d1\\uc73c\\ub85c \\uce5c\\uad6c\\ub4e4\\uc744 \\ub09a\\ub224 \\uac8c\\uc784", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83d\\udcf1"}
+        {"name": "어몽 어스", "style": "화려한 말빨과 심리전으로 상대를 속이고 추리하는 마피아 전략", "mode": "멀티 전용", "emoji": "🚀"},
+        {"name": "구스구스덕", "style": "다양한 특수 직업들로 판을 뒤흔들고 예측 불가능한 대혼돈 마피아", "mode": "멀티 전용", "emoji": "🎤"},
+        {"name": "문명 6", "style": "‘한 턴만 더...’ 온갖 변수와 외교, 전장을 나만의 기발한 트롤링으로 정복", "mode": "솔로 (멀티 가능)", "emoji": "👑"},
+        {"name": "플레이트 업 (PlateUp!)", "style": "요리도 하고 가게 동선도 내 마음대로 개조하며 협동하는 식당 로그라이크", "mode": "멀티 권장", "emoji": "🍽️"},
+        {"name": "잭박스 파티 팩", "style": "스마트폰을 리모컨으로 써서 황당한 퀴즈와 드립으로 친구들을 낚는 게임", "mode": "멀티 전용", "emoji": "📱"}
     ],
     "ESTJ": [
-        {"name": "\\ub9bc\\uc6d4\\ub4dc", "style": "\\uc815\\ubca9\\ubbfc\\ub4e4\\uc5d0\\uac2c \\ud6a8\\uc728\\uc741\\uc778 \\uc5c5\\ubb34\\ub9bc \\ubc30\\uc815\\ud558\\uace0 \\uae30\\uc9c0\\ub9bc \\ud1a0\\uc800\\ud558\\uac8c \\uad00\\ub9ac", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83c\\udff9"},
-        {"name": "\\ud2b8\\ub85c\\ud53c\\ucf54 6", "style": "\\ub0b4\\uac00 \\ub3c5\\uc7ac\\uc790\\uac00 \\ub418\\uc5b4 \\uad6c\\uac00\\uc758 \\ubc95\\uc744 \\uc81c\\uc815\\ud558\\uace0 \\uacbd\\uc81c \\uad6c\\uc81c\\ub9bc \\uad49 \\uc7a1\\uace0 \\uc774\\ub044\\ub224", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83c\\udfa9"},
-        {"name": "\\ud50c\\ub798\\ub2db \\uc980", "style": "\\uad00\\ub7ram\\uac1d\\ub4e4\\uc758 \\ub3d9\\uc120\\uacfc \\ub3d9\\ubb3c\\uc758 \\ubcf5\\uc9c0\\ub9bc \\uc644\\ubcbd\\ud55c \\ud1b5\\uc81c\\ub85c 5\\uc131\\uae09 \\ub3d9\\ubb3c\\uc6d0", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udc3e"},
-        {"name": "\\uc96c\\ucee4\\ub2e4\\uc774\\uc2a4 (Jurassic World Evolution)", "style": "\\uacf5\\ub8e1\\ub4e4\\uc758 \\uc704\\ud5d8\\ub3c4\\ub9bc \\ud1b5\\uc81c\\ud558\\uace0 \\uad00\\ub7ram\\uac1d\\uc744 \\uc720\\uce58\\ud558\\ub224 \\uacf5\\ub8e1 \\uacf5\\uc6d0 \\uacbd\\uc601", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83e\\udd95"},
-        {"name": "\\uc544\\ub178 1800 (Anno 1800)", "style": "\\uc0b0\\uc5c5 \\ud601\\uba85 \\uc2dc\\ub300\\uc758 \\ubcf5\\uc7a1\\ud55c \\ubb3c\\ub958 \\ub124\\ud2b8\\uc6cc\\ud06c\\ub9bc \\uad6c\\ucd95\\ud558\\ub224 \\uace0\\uae09 \\ub3c4\\uc2dc \\uacbd\\uc601", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83d\\udea2"}
+        {"name": "림월드", "style": "정착민들에게 효율적인 업무를 배정하고 기지를 철저하게 관리", "mode": "솔로 전용", "emoji": "🏹"},
+        {"name": "트로피코 6", "style": "내가 독재자가 되어 국가의 법을 제정하고 경제 구조를 꽉 잡고 이끄는 재미", "mode": "솔로 (멀티 가능)", "emoji": "🎩"},
+        {"name": "플래닛 주", "style": "관람객들의 동선과 동물의 복지를 완벽한 통제로 맞추는 5성급 동물원 경영", "mode": "솔로 전용", "emoji": "🐾"},
+        {"name": "쥬라기 월드 에볼루션", "style": "공룡들의 위험도를 통제하고 관람객을 유치하는 공룡 공원 경영", "mode": "솔로 전용", "emoji": "🦕"},
+        {"name": "아노 1800 (Anno 1800)", "style": "산업 혁명 시대의 복잡한 물류 네트워크를 구축하는 고급 도시 경영", "mode": "솔로 (멀티 가능)", "emoji": "🚢"}
     ],
     "ESFJ": [
-        {"name": "\\uc557 \\ud14c\\uc774\\ud06c \\ud22c", "style": "\\uc11c\\ub85c \\ud611\\ub825\\ud558\\uc9c0 \\uc54a\\uc73c\\uba74 \\uc808\\ub300 \\uae68 \\uc218 \\uc5c6\\ub224 \\uacbc \\uc6b0\\uc815 \\ucee4\\ud3cc \\ud14c\\uc2a4\\ud2b8", "mode": "\\uba40\\ud220 \\uc804\\uc6a9 (2\\uc778)", "emoji": "\\ud83e\\udd1d"},
-        {"name": "\\uc624\\ubc84\\ucf61", "style": "\\ubc29\\ud5a5 \\ubd84\\ub2f4 \\uc815\\ub300\\ub85c \\ud558\\ub224 \\uc8fc\\ubc29 \\ub300\\uc18c\\ub3d9", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83c\\udf73"},
-        {"name": "\\ud3ec\\uc544\\uc6c3 76", "style": "\\ud669\\ubb34\\uc9c0\\uc5d0\\uc11c \\uc0ac\\ub7ram\\ub4e4\\uc744 \\ub9cc\\ub098 \\ucee4\\ubba4\\ub2c8\\ud2f0\\ub9bc \\uc774\\ub8e8\\uace0 \\ub3d5\\uace0 \\uc0ac\\ub224 \\ud790\\ub9e5", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83c\\udf92"},
-        {"name": "\\ub798\\ud504\\ud2b8 (Raft)", "style": "\\ubc14\\ub2e4 \\uc704\\uc5d8 \\ub5a0\\ub2e4\\ub2ec\\uba70 \\uce5c\\uad6c\\ub4e4\\uacfc \\uc790\\uc6d0\\uc744 \\ubaa8\\uc544 \\ub2ec\\ub310\\ud55c \\ub2ca\\ubaa9\\uc744 \\ud0a4\\uc6b0\\ub224 \\uc0dd\\uc874", "mode": "\\uba40\\ud220 \\uad8c\\uc7a5", "emoji": "\\ud83e\\udd48"},
-        {"name": "\\ub9ac\\ub0b8 \\ud3ec\\ub808\\uc2a4\\ud2b8 (Pico Park)", "style": "\\uace0\\uc591\\uc774\\ub4e4\\uc774 \\uc11c\\ub85c \\ubab8\\uc744 \\uc787\\uc5b4\\uc11c \\ud611\\ub3d9\\ud574\\uc5bc \\uae68\\ub224 \\uc6b0\\uc815 \\ud30c\\uad34(?) \\ud3cd\\uc990 \\uac8c\\uc784", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\ud83d\\udc31"}
+        {"name": "잇 테이크 투", "style": "서로 협력하지 않으면 절대 깰 수 없는 레전드 우정/커플 테스트 게임", "mode": "멀티 전용 (2인)", "emoji": "🤝"},
+        {"name": "오버쿡", "style": "완벽한 역할 분담과 소통으로 헤쳐나가는 대환장 주방 대소동", "mode": "멀티 전용", "emoji": "🍳"},
+        {"name": "폴아웃 76", "style": "황무지에서 새로운 사람들을 만나 커뮤니티를 이루고 돕고 사는 힐링 생존", "mode": "멀티 전용", "emoji": "🎒"},
+        {"name": "래프트 (Raft)", "style": "바다 위를 떠다니며 친구들과 자원을 모아 달달한 뗏목을 키우는 생존", "mode": "멀티 권장", "emoji": "🪵"},
+        {"name": "피코 파크 (Pico Park)", "style": "고양이들이 서로 몸을 잇고 협동하여 퍼즐을 깨는 파티 협동 게임", "mode": "멀티 전용", "emoji": "🐱"}
     ],
     "ENFJ": [
-        {"name": "\\ub354 \\uc2ec\\uc988 4", "style": "\\uae90\\ub9ad\\ud130\\ub4e4\\uc758 \\uad00\\uacc4\\ub9bc \\ub9e4\\u0001\\ub7fd\\uac8c \\uc870\\uc728\\ud558\\uace0, \\ud589\\ubcf5\\ud55c \\uac00\\uc815\\uc744 \\uc124\\uacc4", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83d\\udc8e"},
-        {"name": "\\ubc1c\\ub354\\uc2a4 \\uac8c\\uc784\\ud2b8 3", "style": "\\ud22c\\ub8cc\\ub4e4\\uc758 \\uc774\\uc5bc\\uae30\\ub9bc \\uacbd\\uce6d\\ud558\\uace0 \\uacac\\ub4e4\\uc758 \\ub9c8\\uc74c\\uc744 \\uc774\\ub044\\uc5b4 \\uc138\\uc0c1\\uc744 \\uad6c\\ud568", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83c\\udfb2"},
-        {"name": "\\uc2a4\\ud0ac\\ub4c0\\ubc38\\ub9ac \\uba40\\ud220", "style": "\\ud22c\\uad6c\\ub4e4\\ub9bc \\ube4c\\ub7ec \\ubaa8\\uc544 \\uac01\\uc790 \\ud560 \\uc77c\\uc744 \\uc9c0\\uc815\\ud558\\uace0 \\ub9c8\\uc4f4 \\uc8fc\\ubbfc\\ub4e4\\uacfc \\uce5c\\ud574\\uc9c0\\ub3c4\\ub85d \\ub9ac\\ub384", "mode": "\\uba40\\ud220 \\uad8c\\uc7a5", "emoji": "\\ud83d\\udc14"},
-        {"name": "\\uc5ec\\ubaa8\\ub77c! \\ub9c8\\uc744\\ud68c\\uad00 (Animal Crossing: Wild World)", "style": "\\ub9c8\\uc744\\uc758 \\ubaa8\\ub4e0 \\ub3d9\\ubb3c\\ub4e4\\uc5d0\\uac2c \\uc120\\ubb3c\\uc744 \\uc900\\uc11c \\ubaa8\\ub450\\ub9bc \\ud589\\ubcf5\\ud558\\uac8c \\ub9cc\\ub4e0\\ub224 \\ud611\\ub3d9 \\ub9c8\\uc744 \\uacbd\\uc601", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83c\\udfe1"},
-        {"name": "\\ud14c\\ub77c\\ub9ac\\uc544 (Terraria)", "style": "\\ubaa8\\ud5d8\\uacfc \\uac74\\uc124\\uc744 \\ud558\\uba74\\uc11c NPC \\uc9d1\\uc744 \\uc9c0\\uc5b4\\uc904\\uc11c \\ub098\\ub9cc\\uc758 \\ub9c8\\uc744 \\ucc44\\uc6b0\\ub224 \\ubbf8\\ub2c8 \\uacf5\\ub3d9\\uccb4 RPG", "mode": "\\uc194\\ub85c & \\uba40\\ud220 \\ubaa8\\ub450 \\uc9c0\\uc6d0", "emoji": "\\🌳"}
+        {"name": "더 심즈 4", "style": "캐릭터들의 관계를 매끄럽게 조율하고, 행복한 가정을 설계하는 시뮬레이션", "mode": "솔로 전용", "emoji": "💎"},
+        {"name": "발더스 게이트 3", "style": "동료들의 이야기를 경청하고 그들의 마음을 이끌어 세상을 구하는 대서사 RPG", "mode": "솔로 (멀티 가능)", "emoji": "🎲"},
+        {"name": "스타듀밸리 멀티", "style": "친구들을 불러 모아 각자 할 일을 지정하고 마을 주민들과 친해지도록 리드", "mode": "멀티 권장", "emoji": "🐔"},
+        {"name": "놀러오세요 동물의 숲", "style": "마을의 모든 동물들에게 선물을 주고 모두를 행복하게 만드는 소통 경영", "mode": "솔로 (멀티 가능)", "emoji": "🏡"},
+        {"name": "테라리아 (Terraria)", "style": "모험과 건설을 하면서 NPC 집을 지어주어 나만의 마을을 채우는 미니 공동체", "mode": "솔로 & 멀티 모두 지원", "emoji": "🌳"}
     ],
     "ENTJ": [
-        {"name": "\\ub9ac\\uad6c \\uc62c\\ube0c \\ub808\\uc804\\ub4dc", "style": "\\uc21c\\ub9ac\\ub9bc \\uc704\\ud55c \\uc644\\ubcbd\\ud55c \\uc624\\ub354\\uacfc \\uc804\\ub7b5\\uc801 \\ud310\\ub2e8\\uc73c\\ub85c \\uc804\\uc7a5\\uc744 \\uc905\\ubc31\\ud558\\ub224 \\uc2a4\\ud0ac", "mode": "\\uba40\\ud220 \\uc804\\uc6a9", "emoji": "\\uc13e"},
-        {"name": "\\ud558\\uce20 \\uc624\\ube0c \\uc544\\uc774\\uc5b8 4", "style": "2\\uce28 \\uc138\\uacc4\\ub300\\uc804\\uc758 \\uad60\\ub300\\ub9bc \\uc9c1\\uc811 \\uc9c0\\ud718\\ud558\\uc5ec \\uc804 \\uc138\\uacc4\\uc758 \\ud310\\ub3c4\\ub9bc \\ubc14\\uaccf\\ub224", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83d\\uddfa\\ufe0f"},
-        {"name": "\\ud504\\ub85c\\uc2a4\\ud2b8\\ud3e1\\ud06c", "style": "\\ud05d\\ud55c\\uc758 \\ucd94\\uc644 \\uc14d\\uc5d0\\uc11c \\ub2e8\\ud638\\ud55c \\uacb0\\ub2e8\\ub825\\uacfc \\ubc95\\uc548\\uc73c\\ub85c \\uc778\\ub958\\uc758 \\uc11d\\uc9c0\\uc744 \\uc774\\ub044\\ub224", "mode": "\\uc194\\ub85c \\uc804\\uc6a9", "emoji": "\\ud83c\\udfed"},
-        {"name": "\\ud1a0\\ud0c8 \\uc6cc: \\uc0bc\\uad6d\\uc9c0", "style": "\\ub0b4\\uac00 \\uad70\\uc8fc\\uac00 \\ub418\\uc5b4 \\uc911\\uad6d \\ub300\\ub921\\uc744 \\ud1b5\\uc77c\\ud558\\ub224 \\ub300\\uaddc\\ubaa8 \\uc804\\uc7a5 \\ubc0f \\uc678\\uad50 \\uc2dc\\ubbac\\ub808\\uc774\\uc158", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83d\\udc09"},
-        {"name": "\\uc2a4\\ud144\\ub7ec\\ub9ac\\uc2a4 (Stellaris)", "style": "\\uc6b0\\uc8fc \\uc81c\\uad6d\\uc758 \\uc9c0\\ud718\\uad00\\uc774 \\ub418\\uc5b4 \\uc740\\ud558\\uacc4 \\uc804\\uccb4\\ub9bc \\uc815\\ubcf5\\ud558\\uace0 \\uc2dd\\ubbfc\\uc9c0\\ub9bc \\uad00\\ub9ac\\ud558\\ub224 \\uc2a4\\ucf00\\uc77c", "mode": "\\uc194\\ub85c (\\uba40\\ud220 \\uac00\\ub2a5)", "emoji": "\\ud83c\\udf0c"}
+        {"name": "리그 오브 레전드", "style": "승리를 위한 완벽한 오더와 전략적 판단으로 전장을 지배하는 게임", "mode": "멀티 전용", "emoji": "🏆"},
+        {"name": "하츠 오브 아이언 4", "style": "2차 세계대전의 군대를 직접 지휘하여 전 세계의 판도를 바꾸는 대전략", "mode": "솔로 (멀티 가능)", "emoji": "🗺️"},
+        {"name": "프로스트펑크", "style": "극한의 추위 속에서 단호한 결단력과 법안으로 인류의 생존지를 이끄는 지도자", "mode": "솔로 전용", "emoji": "🏭"},
+        {"name": "토탈 워: 삼국지", "style": "내가 군주가 되어 중국 대륙을 통일하는 대규모 전장 및 외교 시뮬레이션", "mode": "솔로 (멀티 가능)", "emoji": "🐉"},
+        {"name": "스텔라리스 (Stellaris)", "style": "우주 제국의 지휘관이 되어 은하계 전체를 정복하고 식민지를 관리하는 대형 스케일", "mode": "솔로 (멀티 가능)", "emoji": "🌌"}
     ]
 }
-"""
 
-# 격리된 데이터를 안전하게 복구 (파이썬 컴파일러 100% 프리패스!)
-mbti_games = json.loads(raw_json)
+# MBTI 정렬 및 선택 박스
 mbti_list = sorted(list(mbti_games.keys()))
-
 user_mbti = st.selectbox("너의 MBTI는 뭐야? 선택해봐! 👇", mbti_list)
 
 if user_mbti:
@@ -138,11 +133,11 @@ if user_mbti:
     st.write("너의 성향에 맞춰서 재미 보장하는 게임들로 5개 꽉꽉 채워왔어 ✌️")
     st.write("")
     
-    # 1개짜리 잘 되던 무적의 반복문 구조 그대로 가독성 높게 출력!
+    # 에러가 날 수 없는 완전 안전한 마크다운 반복문 구조
     for idx, game in enumerate(games):
         st.markdown(f"### 🎮 {idx+1}. {game['emoji']} {game['name']}")
         st.write(f"**🧐 스타일:** {game['style']}")
         st.write(f"**👥 플레이 방식:** {game['mode']}")
         st.write("") 
         
-    st.success("무려 5개나 준비했으니 네 취향 저격 게임이 무조건 있을 거야! 주말에 신나게 달려봐! 🚀🔥")
+    st.success("무려 5개나 준비했으니 네 취향 저격 게임이 무조건 있을 거야! 재미있게 즐겨봐! 🚀🔥")
