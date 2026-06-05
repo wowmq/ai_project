@@ -133,27 +133,36 @@ with tab1:
             mime="text/plain"
         )
 
+# 🔥 [수정 완료된 영역] 탭2 가로 배치 및 무선택 초기화 구현
 with tab2:
     st.subheader("📝 게이머 전용 30문항 블라인드 테스트")
     st.write("문항 순서와 정답 성향이 무작위로 완전히 뒤섞여 지표 예측이 불가능합니다. 내 진짜 게이밍 성향은 과연 무엇일까요?")
-    st.caption("※ 모든 문항은 초기 미선택 상태로 나타납니다.")
+    st.caption("※ 모든 문항은 실제 MBTI 설문지처럼 가로형으로 깔끔하게 정렬되며, 초기에는 아무것도 선택되지 않습니다.")
     
     # 누적 스코어 딕셔너리
     scores = {"E": 0, "I": 0, "S": 0, "N": 0, "T": 0, "F": 0, "J": 0, "P": 0}
     
     st.write("---")
     
-    # 모든 문제를 다 풀었는지 체크하기 위한 리스트
+    # 모든 문제를 다 풀었는지 체크하기 위한 변수
     all_answered = True
     
     # 셔플된 게임 문항 순회 출력
     for display_idx, (original_idx, q_data) in enumerate(st.session_state.shuffled_questions):
+        
+        # 💡 질문 제목 가독성 개선
+        st.markdown(f"**Q{display_idx+1}. {q_data['q']}**")
+        
+        # 💡 보기를 가로로 정렬(horizontal=True) 및 첫 선택 해제(index=None) 구현
         choice = st.radio(
-            f"Q{display_idx+1}. {q_data['q']}", 
-            [q_data['a1'], q_data['a2']], 
-            index=None,  # 최초에 아무것도 선택되지 않도록 설정!
-            key=f"gamer_q_{original_idx}"
+            label=f"Q{display_idx+1}_label", 
+            options=[q_data['a1'], q_data['a2']], 
+            index=None,                      # 🔥 아무것도 선택 안 된 상태로 시작
+            horizontal=True,                 # 🔥 가로형 정렬로 UI 개선
+            key=f"gamer_q_{original_idx}",
+            label_visibility="collapsed"     # 라디오 타이틀 중복 숨김
         )
+        st.write("") # 문항 사이 깔끔한 줄간격 여백
         
         # 유저가 선택했다면 스코어에 반영, 안 했다면 변수를 False로 변경
         if choice:
