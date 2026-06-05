@@ -94,6 +94,34 @@ if "wishlist" not in st.session_state:
 
 mbti_list = sorted(list(mbti_games.keys()))
 
+# 💡 글로벌 스타일 지정: 폰트 크기 및 라디오 버튼 큼직하게 만드는 CSS 주입
+st.markdown("""
+    <style>
+    /* 질문지 텍스트 크기 대폭 확대 및 가독성 개선 */
+    .survey-question {
+        font-size: 20px !important;
+        font-weight: bold !important;
+        color: #1E1E1E;
+        margin-top: 15px !important;
+        margin-bottom: 10px !important;
+        line-height: 1.5;
+    }
+    /* 설문지 카드 레이아웃 스타일 디자인 */
+    .survey-card {
+        background-color: #F8F9FA;
+        padding: 22px;
+        border-radius: 12px;
+        border-left: 6px solid #FF4B4B;
+        margin-bottom: 25px;
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.05);
+    }
+    /* 선택지 라디오 버튼 텍스트 크기 확대 */
+    div[data-testid="stMarkdownContainer"] p {
+        font-size: 16px !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # 탭 레이아웃
 tab1, tab2, tab3, tab4 = st.tabs(["🎮 게임 추천 및 찜하기", "📝 게이머 성향 블라인드 테스트", "👥 친구 게임 궁합", "💬 유저 게시판 & 위시리스트"])
 
@@ -133,11 +161,11 @@ with tab1:
             mime="text/plain"
         )
 
-# 🔥 [수정 완료된 영역] 탭2 가로 배치 및 무선택 초기화 구현
+# 🔥 [디자인 전면 수정] 크게 보기 및 설문지 카드 레이아웃 구현 완료된 영역
 with tab2:
     st.subheader("📝 게이머 전용 30문항 블라인드 테스트")
     st.write("문항 순서와 정답 성향이 무작위로 완전히 뒤섞여 지표 예측이 불가능합니다. 내 진짜 게이밍 성향은 과연 무엇일까요?")
-    st.caption("※ 모든 문항은 실제 MBTI 설문지처럼 가로형으로 깔끔하게 정렬되며, 초기에는 아무것도 선택되지 않습니다.")
+    st.caption("※ 모니터나 스마트폰 화면에서도 한눈에 보이도록 문항 글자 크기와 보기를 대폭 확대했습니다.")
     
     # 누적 스코어 딕셔너리
     scores = {"E": 0, "I": 0, "S": 0, "N": 0, "T": 0, "F": 0, "J": 0, "P": 0}
@@ -150,19 +178,22 @@ with tab2:
     # 셔플된 게임 문항 순회 출력
     for display_idx, (original_idx, q_data) in enumerate(st.session_state.shuffled_questions):
         
-        # 💡 질문 제목 가독성 개선
-        st.markdown(f"**Q{display_idx+1}. {q_data['q']}**")
+        # 💡 HTML/CSS 카드로 묶어서 글씨 크기를 20px로 확대하고 박스 씌우기
+        st.markdown(
+            f'<div class="survey-card"><div class="survey-question">Q{display_idx+1}. {q_data["q"]}</div></div>', 
+            unsafe_allow_html=True
+        )
         
-        # 💡 보기를 가로로 정렬(horizontal=True) 및 첫 선택 해제(index=None) 구현
+        # 💡 라디오 버튼 선택지 글씨도 눈에 잘 띄도록 가로형 정렬 및 넉넉한 줄바꿈 처리
         choice = st.radio(
             label=f"Q{display_idx+1}_label", 
             options=[q_data['a1'], q_data['a2']], 
-            index=None,                      # 🔥 아무것도 선택 안 된 상태로 시작
-            horizontal=True,                 # 🔥 가로형 정렬로 UI 개선
+            index=None,                      
+            horizontal=True,                 
             key=f"gamer_q_{original_idx}",
-            label_visibility="collapsed"     # 라디오 타이틀 중복 숨김
+            label_visibility="collapsed"     
         )
-        st.write("") # 문항 사이 깔끔한 줄간격 여백
+        st.write("---") # 문항 구분을 더욱 명확하게 해주는 분할선
         
         # 유저가 선택했다면 스코어에 반영, 안 했다면 변수를 False로 변경
         if choice:
@@ -173,10 +204,8 @@ with tab2:
         else:
             all_answered = False  # 하나라도 누락되면 False가 됨
             
-    st.write("---")
-    
     # 결과 계산 및 히든 노출 버튼
-    if st.button("📊 나의 게이머 MBTI 결과 확인하기"):
+    if st.button("📊 나의 게이머 MBTI 결과 확인하기", use_container_width=True): # 버튼도 큼직하게 변경
         if not all_answered:
             st.warning("⚠️ 아직 풀지 않은 문제가 있습니다! 30개의 모든 질문에 답한 뒤 결과를 확인해 주세요.")
         else:
