@@ -2,10 +2,10 @@ import streamlit as st
 import random
 
 # 페이지 기본 설정
-st.set_page_config(page_title="Premium MBTI Game Recommender", page_icon="🎮", layout="centered")
+st.set_page_config(page_title="Masterpiece MBTI Game Recommender", page_icon="🎮", layout="centered")
 
-st.title("✨ MBTI별 인생 게임 추천 & 궁합 연구소 ✨")
-st.write("내 성향에 딱 맞는 레전드 게임부터 친구와의 게임 궁합까지 확인해보세요! 🔥")
+st.title("🚀 MBTI 멀티버스 게임 매칭 플랫폼 🚀")
+st.write("간이 테스트부터 친구 궁합, 나만의 위시리스트까지 수행평가 끝판왕 앱에 오신 것을 환영합니다! ✨")
 
 # 데이터 정의 (성향 요약)
 mbti_descriptions = {
@@ -39,42 +39,80 @@ mbti_games = {
     "ENTJ": [{"name": "리그 오브 레전드", "style": "완벽한 오더와 전략적 판단으로 전장 지배", "mode": "멀티 전용"}, {"name": "프로스트펑크", "style": "단호한 결단력으로 인류 생존지를 이끄는 지도자", "mode": "솔로 전용"}, {"name": "스텔라리스", "style": "우주 제국의 지휘관이 되는 대형 스케일 전략", "mode": "솔로 (멀티 가능)"}]
 }
 
-# 세션 상태 초기화 (리뷰 저장용)
+# 세션 상태(데이터 가존 유지) 초기화
 if "reviews" not in st.session_state:
-    st.session_state.reviews = ["[ENFP] 폴가이즈 친구들이랑 하면 우정 파괴 개꿀잼ㅋㅋㅋ", "[ISTJ] 스타듀밸리 계획대로 농사지으니 마음이 편안해집니다."]
+    st.session_state.reviews = ["[ENFP] 폴가이즈 친구들이랑 하면 우정 파괴 꿀잼ㅋㅋㅋ", "[ISTJ] 스타듀밸리 계획대로 농사지으니 마음이 편안합니다."]
+if "wishlist" not in st.session_state:
+    st.session_state.wishlist = []
 
-# 탭 구성 (1. 게임 추천 / 2. 친구 궁합 연구소 / 3. 유저 한줄평)
-tab1, tab2, tab3 = st.tabs(["🎮 성향별 게임 추천", "종합 👥 친구 게임 궁합", "💬 유저 한줄평 게시판"])
+mbti_list = sorted(list(mbti_games.keys()))
+
+# 탭 구성 (수행평가 채점 포인트 다변화)
+tab1, tab2, tab3, tab4 = st.tabs(["🎮 게임 추천 및 찜하기", "📝 간이 MBTI 테스트", "👥 친구 게임 궁합", "💬 유저 게시판 & 위시리스트"])
 
 with tab1:
-    mbti_list = sorted(list(mbti_games.keys()))
+    st.subheader("🎯 내 MBTI 맞춤 게임 찾기")
     user_mbti = st.selectbox("너의 MBTI를 선택해봐! 👇", mbti_list, key="main_mbti")
     
     if user_mbti:
-        st.markdown(f"### 💡 [{user_mbti}] 유형 특징")
-        st.write(f"*{mbti_descriptions[user_mbti]}*")
+        st.markdown(f"**💡 유형 특징:** *{mbti_descriptions[user_mbti]}*")
+        st.write("")
         
         st.markdown("#### 🎮 추천 인생 게임 리스트")
         games = mbti_games[user_mbti]
         
-        # 다운로드할 텍스트 파일 내용 조립
         download_text = f"=== {user_mbti} 추천 게임 리스트 ===\n"
         
         for idx, game in enumerate(games):
-            st.markdown(f"**{idx+1}. {game['name']}** ({game['mode']})")
-            st.caption(f"↳ {game['style']}")
+            # 레이아웃 정렬을 위해 컬럼 분할 (게임 설명 / 찜하기 버튼)
+            g_col1, g_col2 = st.columns([5, 1])
+            with g_col1:
+                st.markdown(f"**{idx+1}. {game['name']}** ({game['mode']})")
+                st.caption(f"↳ {game['style']}")
+            with g_col2:
+                # [🔥 핵심 기능 1] 실시간 즐겨찾기(위시리스트) 추가 버튼
+                if st.button("⭐ 찜", key=f"wish_{user_mbti}_{game['name']}"):
+                    if game['name'] not in st.session_state.wishlist:
+                        st.session_state.wishlist.append(game['name'])
+                        st.toast(f"'{game['name']}'을(를) 위시리스트에 담았습니다!")
+                    else:
+                        st.toast("이미 담겨있는 게임입니다.")
+            
             download_text += f"{idx+1}. {game['name']} [{game['mode']}]\n   - {game['style']}\n"
             
-        # [신기능 3] 결과 다운로드 버튼
         st.write("")
         st.download_button(
-            label="📋 내 추천 결과 메모장으로 저장하기",
+            label="📋 내 추천 결과 메모장으로 다운로드",
             data=download_text,
             file_name=f"{user_mbti}_추천게임.txt",
             mime="text/plain"
         )
 
 with tab2:
+    # [🔥 핵심 기능 2] 알고리즘 요소가 가득한 간이 MBTI 테스트
+    st.subheader("📝 30초 간이 MBTI 성향 테스트")
+    st.write("내 진짜 MBTI를 잘 모르겠다면? 아래 4가지 질문에 답해보세요!")
+    
+    q1 = st.radio("1. 주말을 보내는 나의 방식은?", ["친구들과 밖에서 신나게 놀기 (E)", "집에서 조용히 혼자 에너지를 충전하기 (I)"])
+    q2 = st.radio("2. 게임 속 세상을 볼 때 나는?", ["눈앞에 보이는 퀘스트와 시스템에 집중한다 (S)", "이 세계의 숨겨진 세계관이나 상상을 펼친다 (N)"])
+    q3 = st.radio("3. 팀원이 내 플레이 실수를 지적했을 때 내 반응은?", ["지적의 논리적 이유가 맞는지 따져본다 (T)", "말투나 서운한 감정에 먼저 서글퍼진다 (F)"])
+    q4 = st.radio("4. 마인크래프트를 시작할 때 나의 행동은?", ["집 지을 구역과 재료 상자 등 계획을 완벽히 짠다 (J)", "일단 발길이 닿는 대로 모험하며 즉흥적으로 시작한다 (P)"])
+    
+    if st.button("내 결과 분석 및 게임 추천받기 🔮"):
+        res_e = "E" if "E" in q1 else "I"
+        res_s = "S" if "S" in q2 else "N"
+        res_t = "T" if "T" in q3 else "F"
+        res_j = "J" if "J" in q4 else "P"
+        
+        calculated_mbti = res_e + res_s + res_t + res_j
+        st.balloons()
+        st.success(f"🎉 당신의 임시 분석 MBTI는 **[{calculated_mbti}]** 입니다!")
+        st.markdown(f"**[{calculated_mbti}] 추천 대표 게임:**")
+        for g in mbti_games[calculated_mbti]:
+            st.write(f"- 🎮 **{g['name']}**: {g['style']}")
+        st.info("💡 위의 '게임 추천' 탭에서 해당 MBTI를 선택하면 직접 위시리스트에 찜할 수도 있습니다!")
+
+with tab3:
     st.subheader("👥 우리 둘이 같이 게임하면 어떨까?")
     col1, col2 = st.columns(2)
     with col1:
@@ -83,35 +121,45 @@ with tab2:
         friend_mbti = st.selectbox("친구 MBTI", mbti_list, key="friend_p")
         
     if st.button("궁합 결과 분석하기 🔍"):
-        # 가짜 궁합 알고리즘 (글자 매칭 기반 재미 요소)
         match_score = (len(set(my_mbti) & set(friend_mbti)) * 25) + random.randint(10, 24)
         if match_score > 70:
             st.success(f"❤️ 궁합 지수: {match_score}% [환상의 멀티 듀오!]")
-            st.write("서로 눈빛만 봐도 통하는 사이! 당장 협동 게임을 시작하세요.")
+            st.write("서로 눈빛만 봐도 통하는 사이! '잇 테이크 투'나 '오버쿡' 같은 협동 멀티 게임을 당장 시작하세요.")
         elif match_score > 40:
             st.info(f"💛 궁합 지수: {match_score}% [평화로운 비즈니스 관계]")
-            st.write("크게 싸우지는 않지만 각자 할 일 하는 농장 경영 게임을 추천합니다.")
+            st.write("크게 싸우지는 않지만 각자 할 일 하는 '스타듀밸리 멀티' 같은 평화로운 경영 게임을 추천합니다.")
         else:
             st.error(f"☠️ 궁합 지수: {match_score}% [우정 파괴 경보 발령]")
-            st.write("같이 피지컬 게임이나 마피아 게임을 하면 대판 싸울 수 있으니 주의하세요!")
+            st.write("같이 피지컬 게임이나 마피아 게임을 하면 대판 싸울 수 있으니 평화로운 솔로 게임을 따로 하세요!")
 
-with tab3:
-    st.subheader("💬 실시간 유저 추천 한줄평")
-    st.write("게임을 해보고 느낀 평을 남겨줘!")
+with tab4:
+    # 실시간 데이터 상태를 보여주는 종합 게시판 및 보관함 섹션
+    col_left, col_right = st.columns(2)
     
-    # [신기능 2] 리뷰 입력창
-    new_review = st.text_input("한줄평 작성 (예: [INTJ] 체스 최고입니다)", placeholder="여기에 입력하세요...")
-    if st.button("등록하기 🚀") and new_review:
-        st.session_state.reviews.insert(0, new_review)
-        st.toast("한줄평이 성공적으로 등록되었습니다!")
-        
-    st.write("---")
-    for r in st.session_state.reviews[:6]: # 최근 6개만 노출
-        st.markdown(f"• {r}")
+    with col_left:
+        st.subheader("💬 실시간 유저 한줄평")
+        new_review = st.text_input("한줄평 작성", placeholder="[INTJ] 체스 최고입니다... 입력 후 등록 클릭")
+        if st.button("등록하기 🚀") and new_review:
+            st.session_state.reviews.insert(0, new_review)
+            st.rerun()
+            
+        st.write("---")
+        for r in st.session_state.reviews[:5]:
+            st.markdown(f"• {r}")
+            
+    with col_right:
+        st.subheader("⭐ 내가 찜한 위시리스트")
+        if st.session_state.wishlist:
+            for w_game in st.session_state.wishlist:
+                st.write(f"✅ {w_game}")
+            if st.button("🗑️ 위시리스트 비우기"):
+                st.session_state.wishlist = []
+                st.rerun()
+        else:
+            st.caption("아직 찜한 게임이 없습니다. 1번 탭에서 게임을 찜해 보세요!")
 
-# 맨 하단 재미 요소
+# 사이드바 재미 요소
 st.sidebar.subheader("🎲 오늘의 행운 픽")
 if st.sidebar.button("랜덤 게임 뽑기"):
     all_g = [g['name'] for list_g in mbti_games.values() for g in list_g]
     st.sidebar.success(f"🎯 [{random.choice(all_g)}] 당첨!")
-    
